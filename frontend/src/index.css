@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #87a837;
+  --brand-secondary: #A8CF45;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #f5f7fb;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-scroll {
+  overflow-y: auto;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.p-component {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+@layer components {
+  .card {
+    @apply bg-white dark:bg-slate-800 border border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
+  }
+  .card-hover {
+    @apply hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium transition-colors;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .skeleton {
+    @apply bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 bg-[length:200%_100%] animate-shimmer rounded;
+  }
+
+  /* ── Inputs de login (jerarquía alta, border consistente) */
+  .field-input {
+    @apply w-full text-sm rounded-xl border-2 transition-all duration-200 outline-none;
+    @apply border-slate-200 bg-slate-50/60 text-slate-900 placeholder:text-slate-400;
+    @apply hover:border-slate-300 hover:bg-white;
+    @apply focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/15;
+    @apply dark:border-slate-700 dark:bg-slate-800/60 dark:text-white dark:placeholder:text-slate-500;
+    @apply dark:hover:border-slate-600 dark:hover:bg-slate-800;
+    @apply dark:focus:border-brand-400 dark:focus:bg-slate-800 dark:focus:ring-brand-400/20;
+  }
+}
+
+/* ── Resetear wrapper de PrimeReact Password para heredar los mismos estilos */
+.p-password.field-shell {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.p-password.field-shell .p-password-input {
+  width: 100%;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  border: 2px solid #e2e8f0;
+  background-color: rgba(248, 250, 252, 0.6);
+  color: #0f172a;
+  padding: 0.875rem 3rem 0.875rem 2.75rem;
+  transition: all 0.2s ease;
+  outline: none;
+  font-family: inherit;
+}
+.p-password.field-shell .p-password-input::placeholder {
+  color: #94a3b8;
+}
+.p-password.field-shell .p-password-input:hover {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+.p-password.field-shell .p-password-input:focus {
+  border-color: #A8CF45;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(168, 207, 69, 0.15);
+}
+.p-password.field-shell .p-password-icon {
+  position: absolute;
+  right: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.15s;
+  z-index: 5;
+}
+.p-password.field-shell .p-password-icon:hover {
+  color: #87a837;
+}
+.dark .p-password.field-shell .p-password-input {
+  border-color: #334155;
+  background-color: rgba(30, 41, 59, 0.6);
+  color: #f8fafc;
+}
+.dark .p-password.field-shell .p-password-input::placeholder {
+  color: #64748b;
+}
+.dark .p-password.field-shell .p-password-input:hover {
+  border-color: #475569;
+  background-color: #1e293b;
+}
+.dark .p-password.field-shell .p-password-input:focus {
+  border-color: #b9e55b;
+  background-color: #1e293b;
+  box-shadow: 0 0 0 4px rgba(185, 229, 91, 0.20);
+}
+
+@layer utilities {
+  .glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
