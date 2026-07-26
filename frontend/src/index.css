@@ -3,8 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --brand-primary: #87a837;
-  --brand-secondary: #A8CF45;
+  /* Valores RGB de la paleta Uparsistem (verde)
+     Se sobreescriben dinámicamente desde theme.js según la sede seleccionada */
+  --brand-50:  247 252 233;
+  --brand-100: 238 249 210;
+  --brand-200: 220 242 165;
+  --brand-300: 203 236 120;
+  --brand-400: 185 229 91;
+  --brand-500: 168 207 69;
+  --brand-600: 135 168 55;
+  --brand-700: 103 129 42;
+  --brand-800: 74 92 30;
+  --brand-900: 47 58 19;
+  --brand-primary: #A8CF45;
+  --brand-primary-dark: #87a837;
+  --brand-primary-text: #ffffff;
 }
 
 html, body, #root {
@@ -41,9 +54,130 @@ html, body, #root {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* ── Calendar más compacto */
+.p-datepicker {
+  font-size: 0.85rem !important;
+  padding: 0.5rem !important;
+  min-width: 240px !important;
+}
+.p-datepicker .p-datepicker-header {
+  padding: 0.4rem 0.5rem !important;
+  font-size: 0.85rem !important;
+}
+.p-datepicker table th {
+  padding: 0.4rem 0 !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+}
+.p-datepicker table td {
+  padding: 0 !important;
+}
+.p-datepicker table td > span {
+  width: 2rem !important;
+  height: 2rem !important;
+  font-size: 0.8rem !important;
+}
+.p-datepicker .p-datepicker-group-container {
+  min-width: 240px !important;
+}
+.p-datepicker .p-datepicker-calendar-container {
+  min-width: 240px !important;
+}
+.p-datepicker-title {
+  gap: 0.5rem !important;
+}
+
+/* ── Bordes y estilos consistentes para componentes PrimeReact (dinámicos con brand) */
+.p-dropdown {
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s !important;
+  width: 100% !important;
+  min-height: 46px !important;
+}
+.p-dropdown:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+.p-dropdown:not(.p-disabled).p-focus {
+  border-color: rgb(var(--brand-500)) !important;
+  box-shadow: 0 0 0 4px rgb(var(--brand-200) / 0.5) !important;
+}
+.p-dropdown .p-dropdown-label {
+  padding: 0.75rem 0.875rem !important;
+  font-size: 0.875rem !important;
+  color: #0f172a !important;
+  background: transparent !important;
+  min-height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.p-dropdown .p-dropdown-trigger {
+  width: 2.5rem !important;
+  color: #64748b !important;
+}
+.dark .p-dropdown {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border-color: #334155 !important;
+}
+.dark .p-dropdown:hover {
+  border-color: #475569 !important;
+}
+.dark .p-dropdown .p-dropdown-label {
+  color: #f8fafc !important;
+}
+.dark .p-dropdown:not(.p-disabled).p-focus {
+  border-color: rgb(var(--brand-400, 185 229 91)) !important;
+  box-shadow: 0 0 0 4px rgb(var(--brand-200) / 0.4) !important;
+}
+
+/* Calendar wrapper con bordes consistentes */
+.p-calendar .p-inputtext {
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s !important;
+  color: #0f172a !important;
+}
+.p-calendar .p-inputtext:hover {
+  border-color: #cbd5e1 !important;
+}
+.p-calendar .p-inputtext:focus {
+  border-color: rgb(var(--brand-500)) !important;
+  box-shadow: 0 0 0 4px rgb(var(--brand-200) / 0.5) !important;
+}
+.p-calendar .p-datepicker-trigger {
+  border: 2px solid #e2e8f0 !important;
+  border-left: 0 !important;
+  border-radius: 0 0.75rem 0.75rem 0 !important;
+  background: #f8fafc !important;
+  color: #64748b !important;
+  width: 2.75rem !important;
+}
+.p-calendar .p-datepicker-trigger:hover {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+}
+.dark .p-calendar .p-inputtext {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+}
+.dark .p-calendar .p-inputtext:hover {
+  border-color: #475569 !important;
+}
+.dark .p-calendar .p-datepicker-trigger {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
 @layer components {
   .card {
-    @apply bg-white dark:bg-slate-800 border border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
   }
   .card-hover {
     @apply hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
@@ -61,19 +195,20 @@ html, body, #root {
     @apply bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 bg-[length:200%_100%] animate-shimmer rounded;
   }
 
-  /* ── Inputs de login (jerarquía alta, border consistente) */
+  /* ── Inputs del formulario */
   .field-input {
-    @apply w-full text-sm rounded-xl border-2 transition-all duration-200 outline-none;
-    @apply border-slate-200 bg-slate-50/60 text-slate-900 placeholder:text-slate-400;
-    @apply hover:border-slate-300 hover:bg-white;
-    @apply focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/15;
-    @apply dark:border-slate-700 dark:bg-slate-800/60 dark:text-white dark:placeholder:text-slate-500;
-    @apply dark:hover:border-slate-600 dark:hover:bg-slate-800;
-    @apply dark:focus:border-brand-400 dark:focus:bg-slate-800 dark:focus:ring-brand-400/20;
+    @apply w-full text-sm rounded-xl border-2 border-slate-200 bg-white shadow-sm
+    text-slate-900 placeholder:text-slate-400 py-3 px-3.5
+    hover:border-slate-300 hover:shadow
+    focus:border-brand-500 focus:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-500/30
+    dark:border-slate-700 dark:bg-slate-800/60 dark:text-white dark:placeholder:text-slate-500
+    dark:hover:border-slate-600 dark:hover:bg-slate-800
+    dark:focus:border-brand-400 dark:focus:bg-slate-800 dark:focus:ring-brand-400/30
+    transition-all duration-200;
   }
 }
 
-/* ── Resetear wrapper de PrimeReact Password para heredar los mismos estilos */
+/* ── Resetear wrapper de PrimeReact Password */
 .p-password.field-shell {
   position: relative;
   display: block;
@@ -84,7 +219,7 @@ html, body, #root {
   font-size: 0.875rem;
   border-radius: 0.75rem;
   border: 2px solid #e2e8f0;
-  background-color: rgba(248, 250, 252, 0.6);
+  background-color: #ffffff;
   color: #0f172a;
   padding: 0.875rem 3rem 0.875rem 2.75rem;
   transition: all 0.2s ease;
@@ -99,9 +234,9 @@ html, body, #root {
   background-color: #ffffff;
 }
 .p-password.field-shell .p-password-input:focus {
-  border-color: #A8CF45;
+  border-color: rgb(var(--brand-500));
   background-color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(168, 207, 69, 0.15);
+  box-shadow: 0 0 0 4px rgb(var(--brand-200) / 0.5);
 }
 .p-password.field-shell .p-password-icon {
   position: absolute;
@@ -114,7 +249,7 @@ html, body, #root {
   z-index: 5;
 }
 .p-password.field-shell .p-password-icon:hover {
-  color: #87a837;
+  color: rgb(var(--brand-600));
 }
 .dark .p-password.field-shell .p-password-input {
   border-color: #334155;
@@ -129,9 +264,9 @@ html, body, #root {
   background-color: #1e293b;
 }
 .dark .p-password.field-shell .p-password-input:focus {
-  border-color: #b9e55b;
+  border-color: rgb(var(--brand-400, 185 229 91));
   background-color: #1e293b;
-  box-shadow: 0 0 0 4px rgba(185, 229, 91, 0.20);
+  box-shadow: 0 0 0 4px rgb(var(--brand-200) / 0.4);
 }
 
 @layer utilities {
@@ -140,3 +275,160 @@ html, body, #root {
     -webkit-backdrop-filter: blur(12px);
   }
 }
+
+/* ── Calendar inputs (fecha expedición, nacimiento, ingreso, final) ──── */
+.p-calendar .p-inputtext {
+  height: 46px !important;
+  padding: 0.75rem 0.875rem !important;
+  font-size: 0.875rem !important;
+  border-radius: 0.75rem !important;
+  border-width: 2px !important;
+}
+.p-calendar .p-datepicker-trigger {
+  width: 46px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+.p-calendar .p-button.p-datepicker-trigger {
+  background: transparent !important;
+  color: #64748b !important;
+  border: 2px solid #e2e8f0 !important;
+  border-left: none !important;
+}
+.p-calendar .p-button.p-datepicker-trigger:hover {
+  background: rgb(var(--brand-50)) !important;
+  color: rgb(var(--brand-700)) !important;
+  border-color: rgb(var(--brand-300)) !important;
+}
+.dark .p-calendar .p-inputtext {
+  border-color: #334155 !important;
+}
+.dark .p-calendar .p-button.p-datepicker-trigger {
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+/* ── Dropdown panel premium (popovers de Cargo / Profesión / EPS) ───────── */
+.gth-dropdown-panel.p-dropdown-panel {
+  border-radius: 14px;
+  border: 1px solid rgb(var(--brand-200));
+  box-shadow:
+    0 10px 30px -10px rgb(15 23 42 / 0.18),
+    0 4px 10px -4px rgb(15 23 42 / 0.08),
+    0 0 0 1px rgb(255 255 255 / 0.6) inset;
+  overflow: hidden;
+  padding: 0;
+  margin-top: 6px;
+}
+.dark .gth-dropdown-panel.p-dropdown-panel {
+  border-color: rgb(51 65 85);
+  box-shadow:
+    0 18px 40px -10px rgb(0 0 0 / 0.55),
+    0 0 0 1px rgb(255 255 255 / 0.04) inset;
+}
+
+/* Header del filter */
+.gth-dropdown-panel .p-dropdown-filter-container {
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgb(var(--brand-50)) 0%, #ffffff 100%);
+  border-bottom: 1px solid rgb(var(--brand-100));
+}
+.dark .gth-dropdown-panel .p-dropdown-filter-container {
+  background: linear-gradient(180deg, rgb(15 23 42) 0%, rgb(30 41 59) 100%);
+  border-bottom-color: rgb(51 65 85);
+}
+.gth-dropdown-panel .p-dropdown-filter {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border-radius: 9px;
+  border: 1px solid rgb(var(--brand-200));
+  background: #ffffff;
+  font-size: 13px;
+  color: #1f2937;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.gth-dropdown-panel .p-dropdown-filter:focus {
+  border-color: rgb(var(--brand-500));
+  box-shadow: 0 0 0 4px rgb(var(--brand-200) / 0.45);
+}
+.dark .gth-dropdown-panel .p-dropdown-filter {
+  background: rgb(15 23 42);
+  border-color: rgb(51 65 85);
+  color: #f8fafc;
+}
+.gth-dropdown-panel .p-dropdown-filter-icon {
+  left: 12px;
+  color: rgb(var(--brand-600));
+  font-size: 13px;
+}
+
+/* Lista de opciones */
+.gth-dropdown-panel .p-dropdown-items {
+  padding: 4px 0;
+}
+.gth-dropdown-panel .p-dropdown-item {
+  padding: 9px 14px;
+  font-size: 13px;
+  color: #334155;
+  border-radius: 0;
+  transition: background-color 0.12s, color 0.12s;
+}
+.gth-dropdown-panel .p-dropdown-item:not(.p-disabled):hover {
+  background: rgb(var(--brand-50));
+  color: rgb(var(--brand-700));
+}
+.gth-dropdown-panel .p-dropdown-item.p-highlight {
+  background: linear-gradient(90deg, rgb(var(--brand-500)) 0%, rgb(var(--brand-600)) 100%);
+  color: #ffffff;
+  font-weight: 600;
+}
+.gth-dropdown-panel .p-dropdown-item.p-highlight.p-focus {
+  background: linear-gradient(90deg, rgb(var(--brand-600)) 0%, rgb(var(--brand-700)) 100%);
+}
+.dark .gth-dropdown-panel .p-dropdown-item {
+  color: #cbd5e1;
+}
+.dark .gth-dropdown-panel .p-dropdown-item:not(.p-disabled):hover {
+  background: rgba(168, 207, 69, 0.12);
+  color: rgb(var(--brand-300));
+}
+
+/* Headers de grupos (letras A, B, C...) */
+.gth-dropdown-panel .p-dropdown-item-group {
+  padding: 8px 14px 6px;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--brand-700));
+  background: linear-gradient(90deg, rgb(var(--brand-50)) 0%, transparent 100%);
+  border-top: 1px solid rgb(var(--brand-100));
+  border-bottom: 1px solid rgb(var(--brand-100));
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.gth-dropdown-panel .p-dropdown-item-group:first-child {
+  margin-top: 0;
+  border-top: none;
+}
+.dark .gth-dropdown-panel .p-dropdown-item-group {
+  color: rgb(var(--brand-300));
+  background: linear-gradient(90deg, rgb(30 41 59) 0%, transparent 100%);
+  border-top-color: rgb(51 65 85);
+  border-bottom-color: rgb(51 65 85);
+}
+
+/* Empty state */
+.gth-dropdown-panel .p-dropdown-empty-message {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+}
+.dark .gth-dropdown-panel .p-dropdown-empty-message {
+  color: #64748b;
+}
+

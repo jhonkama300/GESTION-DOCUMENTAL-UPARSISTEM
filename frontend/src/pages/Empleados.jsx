@@ -14,7 +14,7 @@ import PageHeader from '../components/PageHeader.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import EmpleadoDrawer from '../components/EmpleadoDrawer.jsx'
 import EmpleadoForm from '../components/EmpleadoForm.jsx'
-import { empleadosService } from '../services/mock.data.js'
+import { empleadosService, SEDES } from '../services/mock.data.js'
 import { useSede } from '../context/SedeContext.jsx'
 import { formatDate, initials } from '../utils/format.js'
 
@@ -24,17 +24,18 @@ const ESTADOS = [
   { label: 'Inactivos', value: 'Inactivo' },
 ]
 
-const SEDES = ['Bogotá', 'Medellín', 'Cali']
+const CIUDADES = ['Bogotá', 'Medellín', 'Cali', 'Barranquilla']
 
 export default function Empleados() {
   const { currentSede } = useSede()
   const [data, setData] = useState([])
   const [filter, setFilter] = useState('')
   const [estado, setEstado] = useState(null)
-  const [sede, setSede] = useState(null)
+  const [ciudad, setCiudad] = useState(null)
   const [selected, setSelected] = useState(null)
   const [drawerVisible, setDrawerVisible] = useState(false)
   const [formVisible, setFormVisible] = useState(false)
+  const [editing, setEditing] = useState(null)
   const toast = useRef(null)
 
   useEffect(() => {
@@ -47,8 +48,8 @@ export default function Empleados() {
       v?.toLowerCase().includes(filter.toLowerCase()),
     )
     const matchEstado = !estado || e.estado === estado
-    const matchSede = !sede || e.sede === sede
-    return matchText && matchEstado && matchSede
+    const matchCiudad = !ciudad || e.sede === ciudad
+    return matchText && matchEstado && matchCiudad
   })
 
   const openPerfil = (e) => {
@@ -56,9 +57,19 @@ export default function Empleados() {
     setDrawerVisible(true)
   }
 
+  const openEdit = (e, ev) => {
+    ev?.stopPropagation()
+    setEditing(e)
+    setFormVisible(true)
+  }
+
+  const openNew = () => {
+    setEditing(null)
+    setFormVisible(true)
+  }
+
   const handleSave = (newEmp) => {
-    const id = Math.max(0, ...data.map((d) => d.id)) + 1
-    const created = { id, ...newEmp, fechaIngreso: newEmp.fechaIngreso.toISOString().slice(0, 10) }
+    const created = { ...newEmp, id: Date.now() }
     setData((d) => [created, ...d])
     toast.current?.show({
       severity: 'success',
@@ -66,6 +77,46 @@ export default function Empleados() {
       detail: `${newEmp.nombre} fue agregado correctamente`,
       life: 3000,
     })
+  }
+
+  const handleUpdate = (id, updated) => {
+    const prevSede = data.find((d) => d.id === id)?.sedeId
+    setData((d) => d.map((e) => (e.id === id ? { ...e, ...updated } : e)))
+
+    if (prevSede !== updated.sedeId) {
+      const fromSede = SEDES.find((s) => s.id === prevSede)?.nombre
+      const toSede = SEDES.find((s) => s.id === updated.sedeId)?.nombre
+      if (prevSede === currentSede?.id) {
+        setData((d) => d.filter((e) => e.id !== id))
+        toast.current?.show({
+          severity: 'info',
+          summary: 'Empleado transferido',
+          detail: `${updated.nombre} se movió de ${fromSede} a ${toSede}. Ya no aparece aquí.`,
+          life: 4000,
+        })
+      } else if (updated.sedeId === currentSede?.id) {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Empleado recibido',
+          detail: `${updated.nombre} llegó desde ${fromSede}.`,
+          life: 4000,
+        })
+      } else {
+        toast.current?.show({
+          severity: 'success',
+          summary: 'Empleado actualizado',
+          detail: `${updated.nombre} ahora está en ${toSede}.`,
+          life: 3000,
+        })
+      }
+    } else {
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Empleado actualizado',
+        detail: `${updated.nombre} fue modificado correctamente`,
+        life: 3000,
+      })
+    }
   }
 
   return (
@@ -80,7 +131,7 @@ export default function Empleados() {
             label="Nuevo empleado"
             icon="pi pi-plus"
             severity="info"
-            onClick={() => setFormVisible(true)}
+            onClick={openNew}
           />
         }
       />
@@ -107,10 +158,10 @@ export default function Empleados() {
           />
 
           <Dropdown
-            value={sede}
-            options={SEDES.map((s) => ({ label: s, value: s }))}
-            onChange={(e) => setSede(e.value)}
-            placeholder="Sede"
+            value={ciudad}
+            options={CIUDADES.map((c) => ({ label: c, value: c }))}
+            onChange={(e) => setCiudad(e.value)}
+            placeholder="Ciudad"
             className="w-36"
             showClear
           />
@@ -129,8 +180,10 @@ export default function Empleados() {
           <EmptyState
             icon="pi-users"
             title="Sin empleados"
-            description="No se encontraron empleados con los filtros aplicados."
-            action={<Button label="Limpiar filtros" icon="pi pi-refresh" outlined size="small" onClick={() => { setFilter(''); setEstado(null); setSede(null) }} />}
+            description="No hay empleados en esta sede con los filtros aplicados."
+            action={
+              <Button label="Limpiar filtros" icon="pi pi-refresh" outlined size="small" onClick={() => { setFilter(''); setEstado(null); setCiudad(null) }} />
+            }
           />
         ) : (
           <DataTable
@@ -183,15 +236,26 @@ export default function Empleados() {
             />
             <Column
               header=""
-              style={{ width: 60 }}
+              style={{ width: 90 }}
               body={(r) => (
-                <button
-                  onClick={(e) => { e.stopPropagation(); openPerfil(r) }}
-                  className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center text-slate-500"
-                  aria-label="Ver perfil"
-                >
-                  <i className="pi pi-arrow-right text-xs" />
-                </button>
+                <div className="flex gap-1">
+                  <button
+                    onClick={(ev) => openEdit(r, ev)}
+                    className="w-8 h-8 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 flex items-center justify-center text-amber-600"
+                    aria-label="Editar empleado"
+                    title="Editar"
+                  >
+                    <i className="pi pi-pencil text-xs" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); openPerfil(r) }}
+                    className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center text-slate-500"
+                    aria-label="Ver perfil"
+                    title="Ver perfil"
+                  >
+                    <i className="pi pi-arrow-right text-xs" />
+                  </button>
+                </div>
               )}
             />
           </DataTable>
@@ -208,6 +272,8 @@ export default function Empleados() {
         visible={formVisible}
         onHide={() => setFormVisible(false)}
         onSave={handleSave}
+        onUpdate={handleUpdate}
+        empleado={editing}
       />
     </div>
   )

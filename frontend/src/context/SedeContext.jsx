@@ -1,31 +1,56 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useAuth } from './AuthContext.jsx'
-import { SEDES } from '../services/mock.data.js'
+import { applyThemeToDocument, getThemeBySedeId, resetThemeToDocument } from '../utils/theme.js'
 
 const SedeContext = createContext(null)
 const STORAGE_KEY = 'gth_current_sede'
 
+function loadStoredSede() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (parsed && typeof parsed === 'object' && parsed.id) return parsed
+    }
+  } catch {}
+  return null
+}
+
 export function SedeProvider({ children }) {
-  const { user } = useAuth()
-  const [currentSede, setCurrentSede] = useState(null)
+  const { user, loading: authLoading } = useAuth()
+  const [currentSede, setCurrentSede] = useState(loadStoredSede)
+  const [validated, setValidated] = useState(false)
 
   useEffect(() => {
+    // Esperar a que Auth termine de cargar
+    if (authLoading) return
+
     if (!user) {
       setCurrentSede(null)
+      resetThemeToDocument()
       try { localStorage.removeItem(STORAGE_KEY) } catch {}
+      setValidated(true)
       return
     }
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (user.sedes?.some((s) => s.id === parsed.id)) {
-          setCurrentSede(parsed)
-          return
-        }
-      }
-    } catch {}
-  }, [user])
+
+    const stored = loadStoredSede()
+    if (stored && user.sedes?.some((s) => s.id === stored.id)) {
+      setCurrentSede(stored)
+    } else {
+      setCurrentSede(null)
+      try { localStorage.removeItem(STORAGE_KEY) } catch {}
+    }
+    setValidated(true)
+  }, [user, authLoading])
+
+  // ── Aplicar tema dinámico según la sede
+  useEffect(() => {
+    if (!currentSede) {
+      resetThemeToDocument()
+      return
+    }
+    applyThemeToDocument(getThemeBySedeId(currentSede.id))
+  }, [currentSede])
 
   const selectSede = (sede) => {
     setCurrentSede(sede)
@@ -34,13 +59,14 @@ export function SedeProvider({ children }) {
 
   const clearSede = () => {
     setCurrentSede(null)
+    resetThemeToDocument()
     try { localStorage.removeItem(STORAGE_KEY) } catch {}
   }
 
   const availableSedes = user?.sedes || []
 
   return (
-    <SedeContext.Provider value={{ currentSede, selectSede, clearSede, availableSedes, allSedes: SEDES }}>
+    <SedeContext.Provider value={{ currentSede, selectSede, clearSede, availableSedes }}>
       {children}
     </SedeContext.Provider>
   )

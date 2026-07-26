@@ -44,7 +44,7 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
               {empleado.nombre}
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {empleado.cargo} · {empleado.area}
+              {empleado.cargo}
             </p>
           </div>
           <Tag
@@ -63,7 +63,6 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
               <Field label="Cédula" value={empleado.cedula} icon="pi-id-card" />
               <Field label="Fecha de ingreso" value={formatDate(empleado.fechaIngreso)} icon="pi-calendar" />
               <Field label="Cargo" value={empleado.cargo} icon="pi-briefcase" />
-              <Field label="Área" value={empleado.area} icon="pi-sitemap" />
               <Field label="Sede" value={empleado.sede} icon="pi-building" />
               <Field label="Estado" value={empleado.estado} icon="pi-check-circle" />
               <Field label="Email" value={`${empleado.nombre.toLowerCase().replace(/ /g, '.')}@gth.com`} icon="pi-envelope" />

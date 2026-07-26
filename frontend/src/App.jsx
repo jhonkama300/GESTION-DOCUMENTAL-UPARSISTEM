@@ -4,6 +4,7 @@ import AuthLayout from './layouts/AuthLayout.jsx'
 import MainLayout from './layouts/MainLayout.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import { useSede } from './context/SedeContext.jsx'
+import { useAuth } from './context/AuthContext.jsx'
 
 import Login from './pages/Login.jsx'
 import SedeSelector from './pages/SedeSelector.jsx'
@@ -26,11 +27,30 @@ import NotFound from './pages/NotFound.jsx'
 
 function RequireSede({ children }) {
   const { currentSede } = useSede()
+  const { user, loading: authLoading } = useAuth()
   const location = useLocation()
+  if (authLoading) {
+    return <FullScreenLoader />
+  }
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />
   if (!currentSede) {
     return <Navigate to="/seleccionar-sede" state={{ from: location }} replace />
   }
   return children
+}
+
+function FullScreenLoader() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div
+        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
+        style={{ background: 'linear-gradient(135deg, #A8CF45 0%, #87a837 100%)' }}
+      >
+        <i className="pi pi-spin pi-spinner text-2xl text-white" />
+      </div>
+      <p className="text-base font-semibold text-slate-700 dark:text-slate-200">Cargando sesión...</p>
+    </div>
+  )
 }
 
 export default function App() {

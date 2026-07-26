@@ -1,13 +1,20 @@
+import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button } from 'primereact/button'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useSede } from '../context/SedeContext.jsx'
+import { resetThemeToDocument, applyThemeToDocument, getThemeBySedeId } from '../utils/theme.js'
 
 export default function SedeSelector() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuth()
   const { availableSedes, selectSede } = useSede()
+
+  // ── Resetear tema (este screen usa color fijo verde)
+  useEffect(() => {
+    resetThemeToDocument()
+  }, [])
 
   const choose = (sede) => {
     selectSede(sede)

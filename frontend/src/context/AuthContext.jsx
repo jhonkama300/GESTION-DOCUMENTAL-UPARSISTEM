@@ -17,10 +17,10 @@ const MOCK_USERS = [
   },
   {
     id: 2,
-    email: 'rrhh@gth.com',
-    password: 'rrhh123',
-    name: 'Ana Rodríguez',
-    role: 'RRHH',
+    email: 'admin2@gth.com',
+    password: 'admin123',
+    name: 'María Salazar',
+    role: 'Administrador',
     sedes: [
       { id: 1, nombre: 'Uparsistem', iniciales: 'UP', color: '#A8CF45', descripcion: 'Empresa de tecnología' },
       { id: 2, nombre: 'Jeanpiaget', iniciales: 'JP', color: '#10b981', descripcion: 'Institución educativa' },
@@ -28,22 +28,33 @@ const MOCK_USERS = [
   },
   {
     id: 3,
-    email: 'supervisor@gth.com',
-    password: 'super123',
-    name: 'Carlos Méndez',
-    role: 'Supervisor',
+    email: 'admin3@gth.com',
+    password: 'admin123',
+    name: 'Roberto Silva',
+    role: 'Administrador',
     sedes: [
       { id: 1, nombre: 'Uparsistem', iniciales: 'UP', color: '#A8CF45', descripcion: 'Empresa de tecnología' },
     ],
   },
   {
     id: 4,
-    email: 'empleado@gth.com',
-    password: 'emp123',
-    name: 'Laura Pérez',
-    role: 'Empleado',
+    email: 'rrhh@gth.com',
+    password: 'rrhh123',
+    name: 'Ana Rodríguez',
+    role: 'Administrativo',
     sedes: [
       { id: 1, nombre: 'Uparsistem', iniciales: 'UP', color: '#A8CF45', descripcion: 'Empresa de tecnología' },
+      { id: 2, nombre: 'Jeanpiaget', iniciales: 'JP', color: '#10b981', descripcion: 'Institución educativa' },
+    ],
+  },
+  {
+    id: 5,
+    email: 'admin4@gth.com',
+    password: 'admin123',
+    name: 'Pedro Gómez',
+    role: 'Administrador',
+    sedes: [
+      { id: 2, nombre: 'Jeanpiaget', iniciales: 'JP', color: '#10b981', descripcion: 'Institución educativa' },
     ],
   },
 ]

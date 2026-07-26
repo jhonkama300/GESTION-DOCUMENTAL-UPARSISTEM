@@ -17,9 +17,7 @@ const USERS = [
 
 const ROL_COLORS = {
   Administrador: 'rose',
-  RRHH: 'emerald',
-  Supervisor: 'amber',
-  Empleado: 'brand',
+  Administrativo: 'brand',
 }
 
 export default function Usuarios() {
@@ -38,7 +36,7 @@ export default function Usuarios() {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        {['Administrador', 'RRHH', 'Supervisor', 'Empleado'].map((r) => {
+        {['Administrador', 'Administrativo'].map((r) => {
           const count = USERS.filter((u) => u.rol === r).length
           return (
             <div key={r} className="card p-4">
