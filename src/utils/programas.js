@@ -882,5 +882,104 @@ export function programasToDropdownGroups() {
     .filter(Boolean)
 }
 
+/* ════════════════════════════════════════════════════════════════
+   Enriquecimiento de CARGOS y PROGRAMAS_ACADEMICOS para los popovers
+   ════════════════════════════════════════════════════════════════ */
+const NIVEL_COLOR_MAP = {
+  'Profesional':   'emerald',
+  'Tecnólogo':      'cyan',
+  'Técnico':        'amber',
+  'Auxiliar':       'slate',
+  'Directivo':      'rose',
+  'Subdirección':   'rose',
+  'Jefatura':       'violet',
+  'Profesional Senior': 'brand',
+  'Senior':         'brand',
+  'Junior':         'slate',
+  'Operativo':      'amber',
+  'General':        'slate',
+}
 
+function classifyCargo(name) {
+  const lower = name.toLowerCase()
+  if (lower.includes('director general') || lower.includes('director ejecutivo') || lower.includes('gerente general')) {
+    return { nivel: 'Directivo', area: 'Alta dirección' }
+  }
+  if (lower.includes('director') || lower.includes('gerente')) {
+    return { nivel: 'Directivo', area: 'Dirección' }
+  }
+  if (lower.startsWith('subgerente') || lower.startsWith('subdirector') || lower.includes('vicepresidente')) {
+    return { nivel: 'Subdirección', area: 'Dirección' }
+  }
+  if (lower.startsWith('jefe') || lower.startsWith('coord')) {
+    return { nivel: 'Jefatura', area: 'Coordinación' }
+  }
+  if (lower.includes('senior') || /\bsr\.?\b/.test(lower)) {
+    return { nivel: 'Profesional Senior', area: 'Profesional' }
+  }
+  if (lower.includes('analista') || lower.includes('especialista') || lower.includes('consultor')) {
+    return { nivel: 'Profesional', area: 'Análisis' }
+  }
+  if (lower.includes('ingeniero') || lower.includes('arquitecto') || lower.includes('diseñador')) {
+    return { nivel: 'Profesional', area: 'Técnica' }
+  }
+  if (lower.includes('desarrollador') || lower.includes('programador') || lower.includes('engineer') || lower.includes('dev ')) {
+    return { nivel: 'Profesional', area: 'Tecnología' }
+  }
+  if (lower.includes('docente') || lower.includes('profesor') || lower.includes('maestro')) {
+    return { nivel: 'Profesional', area: 'Educación' }
+  }
+  if (lower.includes('medic') || lower.includes('enferm') || lower.includes('psicólog') || lower.includes('odont')) {
+    return { nivel: 'Profesional', area: 'Salud' }
+  }
+  if (lower.includes('abogad') || lower.includes('contador') || lower.includes('auditor')) {
+    return { nivel: 'Profesional', area: 'Legal/Finanzas' }
+  }
+  if (lower.includes('operario') || lower.includes('operador')) {
+    return { nivel: 'Operativo', area: 'Producción' }
+  }
+  if (lower.includes('técnico') || lower.includes('tecnico') || lower.includes('técnologo')) {
+    return { nivel: 'Técnico', area: 'Operativa' }
+  }
+  if (lower.includes('auxiliar') || lower.includes('asistente') || lower.includes('practicante') || lower.includes('pasante') || lower.includes('aprendiz') || lower.includes('junior') || lower.includes('jr.')) {
+    return { nivel: 'Junior', area: 'Soporte' }
+  }
+  return { nivel: 'Profesional', area: 'General' }
+}
+
+function getInitials(name = '') {
+  return name
+    .split(/[\s/]+/)
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((w) => w[0]?.toUpperCase() || '')
+    .join('')
+    .slice(0, 2)
+}
+
+const DURACION_TIPICA = {
+  Profesional: '~5 años',
+  'Profesional Senior': '~5 años + exp.',
+  Tecnólogo: '~3 años',
+  Técnico: '~2 años',
+  Auxiliar: '~6 meses',
+}
+
+/* Cargos enriquecidos: { label, value, initials, nivel, area } */
+export const CARGOS_ENRIQUECIDOS = CARGOS.map((label) => ({
+  label,
+  value: label,
+  initials: getInitials(label),
+  ...classifyCargo(label),
+}))
+
+/* Programas académicos enriquecidos: { label, value, initials, nivel } */
+export const PROGRAMAS_ENRIQUECIDOS = PROGRAMAS_ACADEMICOS.map((p) => ({
+  label: p.nombre,
+  value: p.nombre,
+  initials: getInitials(p.nombre),
+  nivel: p.nivel,
+  duracion: DURACION_TIPICA[p.nivel] || 'Variable',
+  area: 'Educación',
+}))
 

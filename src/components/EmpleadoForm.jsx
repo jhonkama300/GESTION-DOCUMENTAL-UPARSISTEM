@@ -1,10 +1,11 @@
-import { memo, useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { Dialog } from 'primereact/dialog'
 import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { Calendar } from 'primereact/calendar'
 import { Button } from 'primereact/button'
 import { Avatar } from 'primereact/avatar'
+import { OverlayPanel } from 'primereact/overlaypanel'
 import { Controller, useForm, useWatch, useFormContext, FormProvider } from 'react-hook-form'
 import LocationPicker from './LocationPicker.jsx'
 import { useSede } from '../context/SedeContext.jsx'
@@ -12,12 +13,17 @@ import { SEDES } from '../services/mock.data.js'
 import {
   TIPOS_DOCUMENTO,
   EPS_COLOMBIA,
+  TIPOS_SANGRE,
+  AFP_COLOMBIA,
+  ARL_COLOMBIA,
+  CAJA_COMPENSACION_COLOMBIA,
+  PARENTESCOS,
   formatEdad,
   formatDuracion,
 } from '../utils/colombia.js'
 import {
-  CARGOS,
-  PROGRAMAS_ACADEMICOS,
+  CARGOS_ENRIQUECIDOS,
+  PROGRAMAS_ENRIQUECIDOS,
   AREAS_LABORALES,
 } from '../utils/programas.js'
 import { fieldInputClass, inputIconLeftClass, labelClass } from '../utils/styles.js'
@@ -25,6 +31,183 @@ import { initials } from '../utils/format.js'
 
 const AREAS = AREAS_LABORALES
 const ESTADOS = ['Activo', 'Inactivo', 'Suspendido']
+
+const parentescoOptions = PARENTESCOS.map((p) => ({ label: p, value: p }))
+
+/* ───────── Configuración de los popovers (AFP, ARL, Caja, Cargo, Profesion, EPS, Sangre) ───────── */
+const REGIMEN_COLORS = {
+  Contributivo: 'emerald',
+  Subsidiado:   'violet',
+  Especial:     'amber',
+}
+const NIVEL_COLOR_MAP = {
+  'Profesional':        'emerald',
+  'Profesional Senior': 'brand',
+  'Tecnólogo':          'cyan',
+  'Técnico':            'amber',
+  'Auxiliar':           'slate',
+  'Directivo':          'rose',
+  'Subdirección':       'rose',
+  'Jefatura':           'violet',
+  'Junior':             'slate',
+  'Operativo':          'amber',
+  'General':            'slate',
+}
+
+const ENTITY_POPOVERS = [
+  {
+    name: 'EPS',
+    icon: 'pi-heart-fill',
+    iconColor: 'rose',
+    options: EPS_COLOMBIA,
+    searchable: true,
+    searchPlaceholder: 'Buscar EPS (ej: Sanitas)...',
+    headerTitle: 'Selecciona una EPS',
+    headerSub: 'Entidad Promotora de Salud · régimen y cobertura',
+    cardSub: (a) => a.region,
+    cardChip: (a) => ({ label: a.regimen, color: REGIMEN_COLORS[a.regimen] || 'slate' }),
+    cardRightLabel: 'Cobertura',
+    cardRightValue: (a) => a.cobertura,
+    footer: (a) => [
+      { label: 'Régimen',  value: a.regimen },
+      { label: 'Región',   value: a.region },
+      { label: 'Rating',   value: '★'.repeat(a.estrellas) + '☆'.repeat(5 - a.estrellas), highlight: true },
+    ],
+    palette: (a) => REGIMEN_COLORS[a.regimen] || 'rose',
+  },
+  {
+    name: 'AFP',
+    icon: 'pi-shield',
+    iconColor: 'brand',
+    options: AFP_COLOMBIA,
+    searchable: true,
+    searchPlaceholder: 'Buscar AFP (ej: Porvenir)...',
+    headerTitle: 'Selecciona una AFP',
+    headerSub: 'Fondo de pensiones · ahorro para tu retiro',
+    cardSub: (a) => (a.publica ? 'Administradora pública de pensiones' : 'Administradora privada'),
+    cardChip: (a) => ({ label: a.tipo, color: a.publica ? 'amber' : 'slate' }),
+    cardRightLabel: 'Comisión',
+    cardRightValue: (a) => a.comision,
+    footer: (a) => [
+      { label: 'Tipo',         value: a.tipo },
+      { label: 'Comisión',     value: a.comision, highlight: true },
+      { label: 'Solidaridad',  value: a.fondoSolidaridad },
+    ],
+    palette: (a) => (a.publica ? 'amber' : 'brand'),
+  },
+  {
+    name: 'ARL',
+    icon: 'pi-shield',
+    iconColor: 'rose',
+    options: ARL_COLOMBIA,
+    searchable: true,
+    searchPlaceholder: 'Buscar ARL (ej: Sura)...',
+    headerTitle: 'Selecciona una ARL',
+    headerSub: 'Administradora de Riesgos Laborales',
+    cardSub: (a) => `Riesgos cubiertos: ${a.riesgoCubierto}`,
+    cardChip: null,
+    cardRightLabel: 'Calificación',
+    cardRightValue: (a) => '★'.repeat(a.estrellas) + '☆'.repeat(5 - a.estrellas),
+    footer: (a) => [
+      { label: 'Riesgos',  value: a.riesgoCubierto },
+      { label: 'Niveles',  value: a.estrellas + ' / 5', highlight: true },
+    ],
+    palette: () => 'rose',
+  },
+  {
+    name: 'Caja',
+    icon: 'pi-home',
+    iconColor: 'cyan',
+    options: CAJA_COMPENSACION_COLOMBIA,
+    searchable: true,
+    searchPlaceholder: 'Buscar caja (ej: Compensar)...',
+    headerTitle: 'Selecciona una Caja',
+    headerSub: 'Caja de Compensación Familiar',
+    cardSub: (a) => `Región: ${a.region}`,
+    cardChip: (a) => ({ label: a.cuota + ' nómina', color: 'emerald' }),
+    cardRightLabel: 'Cuota',
+    cardRightValue: (a) => a.cuota,
+    footer: (a) => [
+      { label: 'Región',      value: a.region },
+      { label: 'Servicios',   value: a.servicios.join(' · '), wide: true },
+    ],
+    palette: () => 'cyan',
+  },
+  {
+    name: 'Cargo',
+    icon: 'pi-briefcase',
+    iconColor: 'brand',
+    options: CARGOS_ENRIQUECIDOS,
+    searchable: true,
+    searchPlaceholder: 'Buscar cargo (ej: Desarrollador)...',
+    visibleLimit: 50,
+    headerTitle: 'Selecciona un cargo',
+    headerSub: 'Puesto que ocupa en la empresa',
+    cardSub: (a) => a.area,
+    cardChip: (a) => ({ label: a.nivel, color: NIVEL_COLOR_MAP[a.nivel] || 'slate' }),
+    cardRightLabel: 'Nivel',
+    cardRightValue: (a) => a.nivel,
+    footer: (a) => [
+      { label: 'Nivel',  value: a.nivel },
+      { label: 'Área',   value: a.area },
+    ],
+    palette: (a) => (a.nivel === 'Directivo' || a.nivel === 'Subdirección') ? 'rose'
+                   : (a.nivel === 'Jefatura')                    ? 'violet'
+                   : (a.nivel === 'Profesional')                 ? 'brand'
+                   : (a.nivel === 'Profesional Senior')          ? 'emerald'
+                   : (a.nivel === 'Operativo')                   ? 'amber'
+                   : 'slate',
+  },
+  {
+    name: 'Profesion',
+    icon: 'pi-bookmark',
+    iconColor: 'cyan',
+    options: PROGRAMAS_ENRIQUECIDOS,
+    searchable: true,
+    searchPlaceholder: 'Buscar programa (ej: Administración)...',
+    visibleLimit: 80,
+    headerTitle: 'Selecciona una profesión',
+    headerSub: 'Programa académico de formación',
+    cardSub: (a) => `Duración típica: ${a.duracion}`,
+    cardChip: (a) => ({ label: a.nivel, color: NIVEL_COLOR_MAP[a.nivel] || 'slate' }),
+    cardRightLabel: 'Nivel',
+    cardRightValue: (a) => a.nivel,
+    footer: (a) => [
+      { label: 'Nivel',     value: a.nivel },
+      { label: 'Duración',   value: a.duracion },
+    ],
+    palette: (a) => NIVEL_COLOR_MAP[a.nivel] || 'cyan',
+  },
+  {
+    name: 'Sangre',
+    icon: 'pi-heart-fill',
+    iconColor: 'rose',
+    options: TIPOS_SANGRE,
+    searchable: true,
+    searchPlaceholder: 'Buscar tipo (ej: O+, A+)...',
+    headerTitle: 'Selecciona el tipo de sangre',
+    headerSub: 'Compatible con bancos de sangre · Emergencias',
+    cardSub: (a) => `Grupo ${a.grupo} · Factor Rh ${a.rh}`,
+    cardChip: (a) => ({ label: a.grupo + a.rh, color: a.rh === '+' ? 'rose' : 'slate' }),
+    cardRightLabel: 'Frecuencia',
+    cardRightValue: (a) => a.frecuencia,
+    footer: (a) => [
+      { label: 'Donar a',     value: a.puedeDonarA,      wide: true },
+      { label: 'Recibir de',  value: a.puedeRecibirDe,   wide: true },
+    ],
+    palette: (a) => (a.rh === '+' ? 'rose' : 'amber'),
+  },
+]  
+
+/* Colores brand disponibles para gradiente del badge */
+const BADGE_PALETTE = {
+  brand:   'bg-gradient-to-br from-brand-500 to-brand-700',
+  emerald: 'bg-gradient-to-br from-emerald-500 to-emerald-700',
+  amber:   'bg-gradient-to-br from-amber-500 to-amber-700',
+  rose:    'bg-gradient-to-br from-rose-500 to-rose-700',
+  cyan:    'bg-gradient-to-br from-cyan-500 to-cyan-700',
+  violet:  'bg-gradient-to-br from-violet-500 to-violet-700',
+}
 
 const empty = {
   nombres: '',
@@ -38,6 +221,13 @@ const empty = {
   lugarNacimiento: '',
   direccion: '',
   eps: null,
+  afp: null,
+  arl: null,
+  cajaCompensacion: null,
+  tipoSangre: null,
+  contactoNombre: '',
+  contactoParentesco: null,
+  contactoTelefono: '',
   cargo: null,
   profesion: null,
   nivelAcademico: null,
@@ -51,8 +241,8 @@ function buildDefaults(empleado, currentSede) {
   if (!empleado) return empty
   return {
     ...empty,
-    nombres: empleado.nombres || empleado.nombre?.split(' ')[0] || '',
-    apellidos: empleado.apellidos || empleado.nombre?.split(' ').slice(1).join(' ') || '',
+    nombres: empleado.nombres || empleado.nombre?.split(' ')?.[0] || '',
+    apellidos: empleado.apellidos || empleado.nombre?.split(' ')?.slice(1)?.join(' ') || '',
     tipoDocumento: empleado.tipoDocumento || null,
     identificacion: empleado.identificacion || empleado.cedula || '',
     email: empleado.email || '',
@@ -62,6 +252,13 @@ function buildDefaults(empleado, currentSede) {
     lugarNacimiento: empleado.lugarNacimiento || '',
     direccion: empleado.direccion || '',
     eps: empleado.eps || null,
+    afp: empleado.afp || null,
+    arl: empleado.arl || null,
+    cajaCompensacion: empleado.cajaCompensacion || null,
+    tipoSangre: empleado.tipoSangre || null,
+    contactoNombre: empleado.contactoNombre || '',
+    contactoParentesco: empleado.contactoParentesco || null,
+    contactoTelefono: empleado.contactoTelefono || '',
     cargo: empleado.cargo || null,
     profesion: empleado.profesion || null,
     nivelAcademico: empleado.nivelAcademico || null,
@@ -96,16 +293,6 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
   })
   const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = methods
 
-  const cargosFlat = useMemo(
-    () => Array.from(new Set(CARGOS)).map((c) => ({ label: c, value: c })),
-    []
-  )
-  const programasFlat = useMemo(
-    () => Array.from(new Set(PROGRAMAS_ACADEMICOS.map((p) => p.nombre))).map((n) => ({ label: n, value: n })),
-    []
-  )
-  const epsOptions = useMemo(() => EPS_COLOMBIA.map((e) => ({ label: e, value: e })), [])
-
   useEffect(() => {
     if (visible) reset(buildDefaults(empleado, currentSede))
   }, [visible, empleado, currentSede, reset])
@@ -136,6 +323,13 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
       lugarNacimiento: formData.lugarNacimiento,
       direccion: formData.direccion,
       eps: formData.eps,
+      afp: formData.afp,
+      arl: formData.arl,
+      cajaCompensacion: formData.cajaCompensacion,
+      tipoSangre: formData.tipoSangre,
+      contactoNombre: formData.contactoNombre,
+      contactoParentesco: formData.contactoParentesco,
+      contactoTelefono: formData.contactoTelefono,
       fechaIngreso: formData.fechaIngreso ? new Date(formData.fechaIngreso).toISOString().slice(0, 10) : null,
       fechaFinal: formData.fechaFinal ? new Date(formData.fechaFinal).toISOString().slice(0, 10) : null,
       edad: formatEdad(formData.fechaNacimiento),
@@ -238,7 +432,7 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                     </Field>
                   </div>
                   <div className="col-span-12 sm:col-span-4">
-                    <Field label="Tipo de identificaciÃ³n" required error={errors.tipoDocumento}>
+                    <Field label="Tipo de identificación" required error={errors.tipoDocumento}>
                       <Controller
                         name="tipoDocumento"
                         control={control}
@@ -352,11 +546,13 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                 </div>
               </section>
 
-              {/* SECCIÃ“N 3: Residencia y salud */}
+              {/* SECCIÓN 3: Residencia y salud */}
               <section>
-                <SectionHeader icon="pi-home" title="Residencia y salud" desc="Dirección actual y entidad promotora de salud" index="3" />
+                <SectionHeader icon="pi-home" title="Residencia y salud" desc="Dirección, seguridad social y contacto de emergencia" index="3" />
+
+                {/* Fila 1: Dirección (ancho completo) */}
                 <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-12 sm:col-span-7">
+                  <div className="col-span-12">
                     <Field label="Dirección de residencia" required error={errors.direccion} icon="pi-home">
                       <Controller
                         name="direccion"
@@ -371,27 +567,109 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                       />
                     </Field>
                   </div>
+                </div>
+
+                {/* Fila 2: EPS + AFP + Tipo de sangre */}
+                <div className="grid grid-cols-12 gap-4 mt-4">
                   <div className="col-span-12 sm:col-span-5">
-                    <Field label="EPS" required error={errors.eps} icon="pi-heart">
+                    <Controller
+                      name="eps"
+                      control={control}
+                      rules={{ required: 'Requerido' }}
+                      render={({ field }) => (
+                        <EntityPopoverField
+                          fieldKey="EPS"
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={errors.eps}
+                          required
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="col-span-12 sm:col-span-4">
+                    <Controller
+                      name="afp"
+                      control={control}
+                      render={({ field }) => <EntityPopoverField fieldKey="AFP" value={field.value} onChange={field.onChange} error={errors.afp} />}
+                    />
+                  </div>
+                  <div className="col-span-12 sm:col-span-3">
+                    <Controller
+                      name="tipoSangre"
+                      control={control}
+                      render={({ field }) => <EntityPopoverField fieldKey="Sangre" value={field.value} onChange={field.onChange} error={errors.tipoSangre} />}
+                    />
+                  </div>
+                </div>
+
+                {/* Fila 2.5: ARL + Caja de compensación */}
+                <div className="grid grid-cols-12 gap-4 mt-4">
+                  <div className="col-span-12 sm:col-span-6">
+                    <Controller
+                      name="arl"
+                      control={control}
+                      render={({ field }) => <EntityPopoverField fieldKey="ARL" value={field.value} onChange={field.onChange} error={errors.arl} />}
+                    />
+                  </div>
+                  <div className="col-span-12 sm:col-span-6">
+                    <Controller
+                      name="cajaCompensacion"
+                      control={control}
+                      render={({ field }) => <EntityPopoverField fieldKey="Caja" value={field.value} onChange={field.onChange} error={errors.cajaCompensacion} />}
+                    />
+                  </div>
+                </div>
+
+                {/* Fila 3: Contacto de emergencia */}
+                <div className="grid grid-cols-12 gap-4 mt-4">
+                  <div className="col-span-12 sm:col-span-5">
+                    <Field label="Contacto de emergencia (nombre)" error={errors.contactoNombre} icon="pi-users">
                       <Controller
-                        name="eps"
+                        name="contactoNombre"
                         control={control}
-                        rules={{ required: 'Requerido' }}
+                        render={({ field }) => (
+                          <span className="relative block">
+                            <i className={`${inputIconLeftClass} pi pi-user`} />
+                            <InputText {...field} className={`${fieldInputClass} pl-10`} placeholder="Ej: María Pérez" />
+                          </span>
+                        )}
+                      />
+                    </Field>
+                  </div>
+                  <div className="col-span-12 sm:col-span-3">
+                    <Field label="Parentesco" error={errors.contactoParentesco}>
+                      <Controller
+                        name="contactoParentesco"
+                        control={control}
                         render={({ field }) => (
                           <Dropdown
                             value={field.value}
                             onChange={(e) => field.onChange(e.value)}
-                            options={epsOptions}
-                            placeholder="Buscar o seleccionar EPS..."
+                            options={parentescoOptions}
+                            placeholder="Seleccionar…"
                             className="w-full"
                             panelClassName="gth-dropdown-panel"
-                            filter
-                            filterPlaceholder="Escribe para buscar (ej: Sanitas)..."
-                            filterMatchMode="contains"
-                            virtualScrollerOptions={{ itemSize: 36 }}
-                            emptyMessage="Sin resultados"
-                            emptyFilterMessage="Sin coincidencias"
                           />
+                        )}
+                      />
+                    </Field>
+                  </div>
+                  <div className="col-span-12 sm:col-span-4">
+                    <Field label="Teléfono de contacto" error={errors.contactoTelefono} icon="pi-phone">
+                      <Controller
+                        name="contactoTelefono"
+                        control={control}
+                        render={({ field }) => (
+                          <span className="relative block">
+                            <i className={`${inputIconLeftClass} pi pi-phone`} />
+                            <InputText
+                              {...field}
+                              onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                              className={`${fieldInputClass} pl-10`}
+                              placeholder="3001234567"
+                            />
+                          </span>
                         )}
                       />
                     </Field>
@@ -425,52 +703,32 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                     </Field>
                   </div>
                   <div className="col-span-12 sm:col-span-5">
-                    <Field label="Profesión / Carrera" error={errors.profesion} hint="Programa académico cursado">
-                      <Controller
-                        name="profesion"
-                        control={control}
-                        render={({ field }) => (
-                          <Dropdown
-                            value={field.value}
-                            onChange={(e) => field.onChange(e.value)}
-                            options={programasFlat}
-                            filter
-                            filterPlaceholder="Escribe para buscar..."
-                            filterMatchMode="contains"
-                            placeholder="Buscar o seleccionar carrera..."
-                            className="w-full"
-                            panelClassName="gth-dropdown-panel"
-                            virtualScrollerOptions={{ itemSize: 36 }}
-                            emptyMessage="Sin resultados"
-                            emptyFilterMessage="Sin coincidencias"
-                          />
-                        )}
-                      />
-                    </Field>
+                    <Controller
+                      name="profesion"
+                      control={control}
+                      render={({ field }) => (
+                        <EntityPopoverField
+                          fieldKey="Profesion"
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={errors.profesion}
+                        />
+                      )}
+                    />
                   </div>
                   <div className="col-span-12 sm:col-span-4">
-                    <Field label="Cargo" error={errors.cargo} hint="Puesto que ocupa en la empresa">
-                      <Controller
-                        name="cargo"
-                        control={control}
-                        render={({ field }) => (
-                          <Dropdown
-                            value={field.value}
-                            onChange={(e) => field.onChange(e.value)}
-                            options={cargosFlat}
-                            filter
-                            filterPlaceholder="Escribe para buscar..."
-                            filterMatchMode="contains"
-                            placeholder="Buscar o seleccionar cargo..."
-                            className="w-full"
-                            panelClassName="gth-dropdown-panel"
-                            virtualScrollerOptions={{ itemSize: 36 }}
-                            emptyMessage="Sin resultados"
-                            emptyFilterMessage="Sin coincidencias"
-                          />
-                        )}
-                      />
-                    </Field>
+                    <Controller
+                      name="cargo"
+                      control={control}
+                      render={({ field }) => (
+                        <EntityPopoverField
+                          fieldKey="Cargo"
+                          value={field.value}
+                          onChange={field.onChange}
+                          error={errors.cargo}
+                        />
+                      )}
+                    />
                   </div>
                   <div className="col-span-12 sm:col-span-3">
                     <label className={labelClass}>
@@ -898,9 +1156,242 @@ function SidebarStat({ icon, label, value }) {
       <div className="min-w-0 flex-1">
         <p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
         <p className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 truncate" title={value || ''}>
-          {value || 'â€”'}
+          {value || '—'}
         </p>
       </div>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════════════════════════
+   EntityPopoverField — selector enriquecido genérico para AFP / ARL / Caja
+   Usa la config ENTITY_POPOVERS para mantener el código DRY.
+   ════════════════════════════════════════════════════════════════ */
+function EntityPopoverField({ fieldKey, value, onChange, error, required }) {
+  const cfg = ENTITY_POPOVERS.find((c) => c.name === fieldKey)
+  const op = useRef(null)
+  const initialHover = cfg ? (value || cfg.options[0].value) : null
+  const [hovered, setHovered] = useState(initialHover)
+  const [search, setSearch] = useState('')
+
+  if (!cfg) return null
+
+  const selected = cfg.options.find((a) => a.value === value)
+  const tone = cfg.iconColor || 'brand'
+  const paletteSel = selected ? BADGE_PALETTE[cfg.palette(selected)] || BADGE_PALETTE[tone] : 'bg-slate-300 dark:bg-slate-600'
+
+  /* Filtrado por búsqueda cuando es searchable */
+  const filteredOptions = (() => {
+    if (!cfg.searchable || !search.trim()) return cfg.options
+    const q = search.toLowerCase().trim()
+    return cfg.options.filter((a) => a.label.toLowerCase().includes(q))
+  })()
+  const visibleOptions = cfg.visibleLimit && filteredOptions.length > cfg.visibleLimit
+    ? filteredOptions.slice(0, cfg.visibleLimit)
+    : filteredOptions
+
+  /* Focus siempre cae sobre el primer item visible filtrado/seleccionado */
+  const focus = selected
+    || (visibleOptions.find((a) => a.value === hovered))
+    || visibleOptions[0]
+    || cfg.options[0]
+  const footerRows = cfg.footer(focus)
+  const wideFooter = footerRows.find((r) => r.wide)
+
+  const renderBadge = a => (a.initials || a.label.slice(0, 2)).toUpperCase()
+
+  return (
+    <div>
+      <label className={labelClass}>
+        <i className={`pi ${cfg.icon} text-[10px] text-brand-600`} />
+        {cfg.name}
+        {required && <span className="text-rose-500 ml-0.5">*</span>}
+      </label>
+
+      <button
+        type="button"
+        onClick={(e) => op.current.toggle(e)}
+        className={`w-full text-left rounded-xl border-2 transition px-3.5 py-3 flex items-center gap-3 ${
+          selected
+            ? 'border-brand-300 bg-brand-50/40 dark:bg-brand-900/20 dark:border-brand-700'
+            : 'border-slate-200 bg-white dark:bg-slate-800/60 dark:border-slate-700 hover:border-slate-300'
+        } ${error ? 'border-rose-400 dark:border-rose-600' : ''}`}
+      >
+        <span className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm ${paletteSel}`}>
+          {selected ? renderBadge(selected) : '?'}
+        </span>
+        <div className="flex-1 min-w-0">
+          {selected ? (
+            <>
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{selected.label}</p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                {cfg.cardSub(selected)}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">Seleccionar {cfg.name}…</p>
+              <p className="text-[11px] text-slate-400">Click para ver opciones</p>
+            </>
+          )}
+        </div>
+        <i className={`pi ${selected ? 'pi-pencil' : 'pi-chevron-down'} text-[10px] text-slate-400 shrink-0`} />
+      </button>
+
+      {error && (
+        <p className="text-xs text-rose-500 mt-1 flex items-center gap-1">
+          <i className="pi pi-exclamation-circle" />{error.message}
+        </p>
+      )}
+
+      <OverlayPanel ref={op} showCloseIcon={false} className="entity-popover" style={{ width: 500 }}>
+        <div className="-m-4">
+          {/* Header */}
+          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-br from-brand-50/60 to-white dark:from-brand-900/20 dark:to-slate-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{cfg.headerTitle}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{cfg.headerSub}</p>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/40 px-2 py-1 rounded">
+                {cfg.searchable && search
+                  ? `${filteredOptions.length} de ${cfg.options.length}`
+                  : `${cfg.options.length} opciones`}
+              </span>
+            </div>
+          </div>
+
+          {/* Buscador (si la entidad lo define) */}
+          {cfg.searchable && (
+            <div className="px-3 pt-3 pb-1">
+              <div className="relative">
+                <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={cfg.searchPlaceholder || 'Buscar...'}
+                  className="w-full pl-9 pr-8 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    aria-label="Limpiar búsqueda"
+                  >
+                    <i className="pi pi-times-circle text-sm" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Lista */}
+          <div className="p-3 space-y-1.5 max-h-72 overflow-y-auto">
+            {visibleOptions.length === 0 ? (
+              <div className="p-6 text-center text-sm text-slate-500">
+                <i className="pi pi-search text-2xl text-slate-300 block mb-2" />
+                Sin resultados para «{search}»
+              </div>
+            ) : visibleOptions.map((a) => {
+              const isSel = value === a.value
+              const isHover = hovered === a.value
+              const itemPalette = BADGE_PALETTE[cfg.palette(a)] || BADGE_PALETTE[tone]
+              const chip = cfg.cardChip ? cfg.cardChip(a) : null
+              const chipClass = chip && {
+                brand:   'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300',
+                emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+                amber:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+                slate:   'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+                rose:    'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+                violet:  'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+                cyan:    'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
+              }[chip.color]
+              return (
+                <button
+                  key={a.value}
+                  type="button"
+                  onMouseEnter={() => setHovered(a.value)}
+                  onClick={() => { onChange(a.value); op.current.hide() }}
+                  className={`w-full text-left rounded-lg p-2.5 flex items-center gap-3 transition border ${
+                    isSel
+                      ? 'bg-brand-50 dark:bg-brand-900/30 border-brand-300 dark:border-brand-700 ring-2 ring-brand-200 dark:ring-brand-800'
+                      : isHover
+                        ? 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'
+                        : 'bg-transparent border-transparent'
+                  }`}
+                >
+                  <span className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm ${itemPalette}`}>
+                    {renderBadge(a)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{a.label}</p>
+                      {isSel && <i className="pi pi-check-circle text-brand-600 dark:text-brand-400 text-xs" />}
+                      {chip && (
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${chipClass}`}>
+                          {chip.label}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                      {cfg.cardSub(a)}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[10px] uppercase tracking-wider text-slate-400 leading-tight">{cfg.cardRightLabel}</p>
+                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{cfg.cardRightValue(a)}</p>
+                  </div>
+                </button>
+              )
+            })}
+
+            {/* Indicador de "ver más" si se truncó por el limit */}
+            {cfg.searchable && search && filteredOptions.length > (cfg.visibleLimit || visibleOptions.length) && (
+              <div className="px-3 py-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
+                Mostrando los primeros {cfg.visibleLimit} resultados — refina la búsqueda para ver más
+              </div>
+            )}
+          </div>
+
+          {/* Footer: vista rápida del item hover/seleccionado */}
+          <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50">
+            <div className="flex items-start gap-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 shrink-0 mt-1">
+                Vista rápida
+              </span>
+              <div className={`flex-1 grid gap-2 text-[11px] ${wideFooter ? 'grid-cols-1' : 'grid-cols-3'}`}>
+                {footerRows.map((r, i) => (
+                  <Mini key={i} label={r.label} value={r.value} highlight={r.highlight} wide={r.wide} />
+                ))}
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-2 flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                <i className="pi pi-info-circle" />
+                Click para seleccionar · Hover para detalles
+              </span>
+              {cfg.searchable && (
+                <span className="inline-flex items-center gap-1">
+                  <i className="pi pi-keyboard" />
+                  {filteredOptions.length} resultado{filteredOptions.length === 1 ? '' : 's'}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+      </OverlayPanel>
+    </div>
+  )
+}
+
+function Mini({ label, value, highlight, wide }) {
+  return (
+    <div className={`rounded px-2 py-1 ${highlight ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'bg-white dark:bg-slate-700/50'} border border-slate-200 dark:border-slate-600`}>
+      <p className="text-[9px] uppercase tracking-wider text-slate-400 leading-tight">{label}</p>
+      <p className={`${wide ? 'text-[11px]' : 'text-xs'} font-bold leading-tight ${highlight ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-200'}`}>{value}</p>
     </div>
   )
 }

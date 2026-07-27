@@ -317,17 +317,29 @@ function PersonIllustration() {
             <stop offset="0%" stopColor="rgba(168,207,69,0.18)" />
             <stop offset="100%" stopColor="rgba(168,207,69,0)" />
           </linearGradient>
-          <linearGradient id="laptop-base" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#475569" />
-            <stop offset="1" stopColor="#1e293b" />
-          </linearGradient>
           <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#A8CF45" />
             <stop offset="1" stopColor="#87a837" />
           </linearGradient>
+          <linearGradient id="shirt-shadow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#87a837" />
+            <stop offset="1" stopColor="#5a7020" />
+          </linearGradient>
           <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#1e293b" />
             <stop offset="1" stopColor="#0f172a" />
+          </linearGradient>
+          <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#fbe1c4" />
+            <stop offset="1" stopColor="#f4d5b3" />
+          </linearGradient>
+          <linearGradient id="tablet" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#334155" />
+            <stop offset="1" stopColor="#0f172a" />
+          </linearGradient>
+          <linearGradient id="tablet-screen" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#f8fafc" />
+            <stop offset="1" stopColor="#e2e8f0" />
           </linearGradient>
           <linearGradient id="leaf" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#A8CF45" />
@@ -340,114 +352,199 @@ function PersonIllustration() {
           <filter id="card-shadow" x="-50%" y="-50%" width="200%" height="200%">
             <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#000" floodOpacity="0.12" />
           </filter>
+          <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#000" floodOpacity="0.18" />
+          </filter>
         </defs>
 
         {/* círculo de fondo */}
-        <circle cx="240" cy="190" r="170" fill="url(#bg-rad)" />
+        <circle cx="240" cy="200" r="165" fill="url(#bg-rad)" />
 
-        {/* Documentos flotando arriba izquierda */}
-        <g transform="translate(60, 60)" filter="url(#card-shadow)">
-          <rect x="0" y="0" width="46" height="56" rx="4" fill="white" />
-          <rect x="6" y="10" width="24" height="2.5" rx="1" fill="#A8CF45" />
-          <rect x="6" y="18" width="32" height="2" rx="1" fill="#cbd5e1" />
-          <rect x="6" y="24" width="28" height="2" rx="1" fill="#cbd5e1" />
-          <rect x="6" y="30" width="32" height="2" rx="1" fill="#cbd5e1" />
-          <rect x="6" y="36" width="22" height="2" rx="1" fill="#cbd5e1" />
-          <circle cx="34" cy="46" r="7" fill="#A8CF45" />
-          <path d="M30 46 L33 49 L38 43" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Sombra del cuerpo en el piso */}
+        <ellipse cx="240" cy="365" rx="55" ry="5" fill="rgba(0,0,0,0.08)" />
+
+        {/* Documento firmado volando (izquierda arriba) */}
+        <g transform="translate(40, 70) rotate(-12)" filter="url(#card-shadow)">
+          <rect x="0" y="0" width="60" height="76" rx="4" fill="white" />
+          <rect x="6" y="8" width="28" height="2.5" rx="1" fill="#A8CF45" />
+          <rect x="6" y="16" width="44" height="2" rx="1" fill="#cbd5e1" />
+          <rect x="6" y="22" width="38" height="2" rx="1" fill="#cbd5e1" />
+          <rect x="6" y="28" width="42" height="2" rx="1" fill="#cbd5e1" />
+          <rect x="6" y="34" width="32" height="2" rx="1" fill="#cbd5e1" />
+          <path d="M8 50 C 14 46 18 54 24 50 C 30 46 34 56 42 52" stroke="#1e293b" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+          <path d="M8 50 L 50 50" stroke="#cbd5e1" strokeWidth="0.8" fill="none" strokeDasharray="2 2" />
+          <circle cx="46" cy="64" r="9" fill="none" stroke="#A8CF45" strokeWidth="1.6" />
+          <path d="M42 64 L45 67 L50 61" stroke="#A8CF45" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </g>
 
-        {/* Documento con gráfica */}
-        <g transform="translate(30, 150)" filter="url(#card-shadow)">
-          <rect x="0" y="0" width="56" height="68" rx="5" fill="white" />
-          <rect x="8" y="8" width="22" height="2.5" rx="1" fill="#94a3b8" />
-          <rect x="8" y="44" width="6" height="16" rx="1" fill="#A8CF45" />
-          <rect x="18" y="36" width="6" height="24" rx="1" fill="#A8CF45" />
-          <rect x="28" y="28" width="6" height="32" rx="1" fill="#87a837" />
-          <rect x="38" y="40" width="6" height="20" rx="1" fill="#A8CF45" />
+        {/* Lápiz flotante (arriba derecha, lejos del personaje) */}
+        <g transform="translate(390, 90) rotate(35)" filter="url(#soft-shadow)">
+          <rect x="0" y="0" width="54" height="8" rx="1" fill="#fbbf24" />
+          <rect x="0" y="0" width="54" height="4" fill="#f59e0b" />
+          <polygon points="54,0 62,4 54,8" fill="#f4d5b3" />
+          <polygon points="60,3 62,4 60,5" fill="#1e293b" />
+          <rect x="-6" y="0" width="6" height="8" rx="1" fill="#1e293b" />
         </g>
 
-        {/* Carpeta derecha */}
-        <g transform="translate(380, 90)" filter="url(#card-shadow)">
-          <path d="M0 14 L0 58 L70 58 L70 14 L42 14 L36 6 L0 6 Z" fill="#87a837" />
-          <path d="M0 14 L70 14 L70 20 L0 20 Z" fill="#A8CF45" />
-          <rect x="12" y="28" width="46" height="3.5" rx="1" fill="white" opacity="0.85" />
-          <rect x="12" y="38" width="36" height="3.5" rx="1" fill="white" opacity="0.65" />
-          <rect x="12" y="48" width="40" height="3.5" rx="1" fill="white" opacity="0.5" />
-        </g>
-
-        {/* Escudo seguridad */}
-        <g transform="translate(395, 200)" filter="url(#card-shadow)">
+        {/* Sello de verificación (izquierda medio) */}
+        <g transform="translate(35, 215)" filter="url(#card-shadow)">
           <path d="M22 0 L42 8 L42 28 C42 38 33 46 22 50 C11 46 2 38 2 28 L2 8 Z" fill="#A8CF45" />
           <path d="M14 24 L20 30 L30 18" stroke="white" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </g>
 
-        {/* Silla */}
-        <ellipse cx="295" cy="370" rx="90" ry="6" fill="rgba(0,0,0,0.08)" />
-        <rect x="278" y="210" width="40" height="130" rx="10" fill="#334155" />
-        <rect x="265" y="340" width="66" height="12" rx="3" fill="#1e293b" />
-        <rect x="285" y="352" width="6" height="22" fill="#1e293b" />
-        <rect x="307" y="352" width="6" height="22" fill="#1e293b" />
-        <circle cx="288" cy="376" r="6" fill="#0f172a" />
-        <circle cx="310" cy="376" r="6" fill="#0f172a" />
+        {/* ════════ PERSONA DE PIE ════════ */}
+        <g>
+          {/* Piernas (de pie, vaqueros) - visibles por debajo del tablet */}
+          <path d="M222 285 L218 360 L234 360 L240 285 Z" fill="#1e293b" />
+          <path d="M240 285 L246 360 L262 360 L258 285 Z" fill="#1e293b" />
+          {/* zapatos */}
+          <ellipse cx="226" cy="361" rx="13" ry="4" fill="#0f172a" />
+          <ellipse cx="254" cy="361" rx="13" ry="4" fill="#0f172a" />
+          {/* costura */}
+          <line x1="228" y1="290" x2="226" y2="358" stroke="#475569" strokeWidth="0.8" opacity="0.5" />
+          <line x1="252" y1="290" x2="254" y2="358" stroke="#475569" strokeWidth="0.8" opacity="0.5" />
 
-        {/* Cuerpo / camisa */}
-        <path
-          d="M200 220 C 200 210 215 200 240 198 C 265 200 280 210 280 220 L 290 300 C 290 320 280 330 240 330 C 200 330 190 320 190 300 Z"
-          fill="url(#shirt)"
-        />
-        {/* brazo izquierdo */}
-        <path d="M200 230 C 175 260 165 300 180 320 L 210 315 C 215 300 220 280 230 260 Z" fill="url(#shirt)" />
-        {/* brazo derecho */}
-        <path d="M280 230 C 305 260 310 290 295 320 L 270 315 C 270 300 265 280 255 260 Z" fill="url(#shirt)" />
-        {/* manos */}
-        <ellipse cx="190" cy="318" rx="10" ry="6" fill="#f4d5b3" transform="rotate(-20 190 318)" />
-        <ellipse cx="290" cy="318" rx="10" ry="6" fill="#f4d5b3" transform="rotate(20 290 318)" />
+          {/* Torso (camisa) — desde cuello hasta cadera */}
+          <path
+            d="M214 165
+               C 214 156 222 150 240 150
+               C 258 150 266 156 266 165
+               L 270 240
+               C 270 270 260 290 240 290
+               C 220 290 210 270 210 240 Z"
+            fill="url(#shirt)"
+          />
+          {/* sombra lateral del torso */}
+          <path
+            d="M256 155 C 263 160 266 165 266 165 L 270 240 C 270 265 262 282 250 288 L 256 165 Z"
+            fill="url(#shirt-shadow)"
+            opacity="0.4"
+          />
+          {/* cuello camisa (V) */}
+          <path d="M226 150 L 240 167 L 254 150 L 250 148 L 240 158 L 230 148 Z" fill="url(#shirt-shadow)" opacity="0.7" />
 
-        {/* Piernas */}
-        <path d="M210 320 C 205 340 210 360 215 368 L 235 368 C 240 355 240 340 235 320 Z" fill="#1e293b" />
-        <path d="M270 320 C 275 335 275 355 280 368 L 260 368 C 255 355 255 340 250 320 Z" fill="#1e293b" />
+          {/* Brazos — desde el hombro bajan y se curvan hacia el centro */}
+          {/* brazo izquierdo */}
+          <path
+            d="M215 175
+               C 200 188 188 210 192 236
+               C 200 246 214 246 226 240
+               L 226 226
+               C 220 226 214 222 212 216
+               C 212 204 218 192 224 182 Z"
+            fill="url(#shirt)"
+          />
+          {/* brazo derecho */}
+          <path
+            d="M265 175
+               C 280 188 292 210 288 236
+               C 280 246 266 246 254 240
+               L 254 226
+               C 260 226 266 222 268 216
+               C 268 204 262 192 256 182 Z"
+            fill="url(#shirt)"
+          />
 
-        {/* Cuello */}
-        <rect x="228" y="185" width="24" height="20" rx="4" fill="#f4d5b3" />
+          {/* Cuello */}
+          <path d="M231 142 L231 158 C 231 162 235 164 240 164 C 245 164 249 162 249 158 L249 142 Z" fill="url(#skin)" />
+          <path d="M231 152 L249 152 L249 158 C 249 162 245 164 240 164 C 235 164 231 162 231 158 Z" fill="#e8c19a" opacity="0.6" />
 
-        {/* Cabeza */}
-        <ellipse cx="240" cy="160" rx="36" ry="40" fill="#f4d5b3" />
-        {/* Cabello */}
-        <path
-          d="M205 155 C 200 115 220 98 250 100 C 285 102 285 135 278 160 C 275 140 270 135 260 135 C 240 135 215 140 210 155 Z"
-          fill="url(#hair)"
-        />
-        {/* mechón al lado */}
-        <path d="M275 140 C 290 150 290 180 280 200 L 273 190 C 278 175 280 160 275 140 Z" fill="url(#hair)" />
-        {/* Ojos */}
-        <circle cx="232" cy="162" r="2" fill="#1e293b" />
-        <circle cx="250" cy="162" r="2" fill="#1e293b" />
-        {/* Mejillas */}
-        <ellipse cx="222" cy="172" rx="3" ry="2" fill="#f5b9a0" opacity="0.5" />
-        <ellipse cx="260" cy="172" rx="3" ry="2" fill="#f5b9a0" opacity="0.5" />
-        {/* Boca sonrisa */}
-        <path d="M234 175 Q 240 180 248 175" stroke="#1e293b" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          {/* Cabeza */}
+          <ellipse cx="240" cy="116" rx="28" ry="32" fill="url(#skin)" />
+          {/* sombra mandíbula */}
+          <path d="M216 124 C 222 138 230 146 240 146 C 250 146 258 138 264 124 C 264 142 254 150 240 150 C 226 150 216 142 216 124 Z" fill="#e8c19a" opacity="0.55" />
 
-        {/* Laptop */}
-        <g transform="translate(150, 300)" filter="url(#card-shadow)">
-          <rect x="0" y="0" width="180" height="14" rx="2" fill="url(#laptop-base)" />
-          <rect x="20" y="-50" width="140" height="50" rx="3" fill="#1e293b" />
-          <rect x="25" y="-45" width="130" height="40" rx="1" fill="#A8CF45" opacity="0.2" />
-          <rect x="35" y="-38" width="30" height="2" rx="1" fill="white" opacity="0.6" />
-          <rect x="35" y="-32" width="50" height="2" rx="1" fill="white" opacity="0.5" />
-          <rect x="35" y="-26" width="40" height="2" rx="1" fill="white" opacity="0.4" />
-          <circle cx="120" cy="-25" r="6" fill="white" opacity="0.3" />
+          {/* Cabello (corte corto) */}
+          <path
+            d="M212 114
+               C 210 80 220 62 240 62
+               C 260 62 270 80 268 114
+               C 268 114 266 90 240 90
+               C 214 90 212 114 212 114 Z"
+            fill="url(#hair)"
+          />
+          <path d="M230 90 C 222 98 224 110 230 116 C 232 108 232 98 230 90 Z" fill="url(#hair)" />
+
+          {/* Orejas */}
+          <ellipse cx="213" cy="120" rx="3" ry="5" fill="url(#skin)" />
+          <ellipse cx="267" cy="120" rx="3" ry="5" fill="url(#skin)" />
+
+          {/* Cejas */}
+          <path d="M223 108 Q 228 104 234 108" stroke="#1e293b" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+          <path d="M246 108 Q 252 104 257 108" stroke="#1e293b" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+
+          {/* Ojos */}
+          <circle cx="228" cy="118" r="2.2" fill="#1e293b" />
+          <circle cx="252" cy="118" r="2.2" fill="#1e293b" />
+          <circle cx="229" cy="117" r="0.7" fill="white" />
+          <circle cx="253" cy="117" r="0.7" fill="white" />
+
+          {/* Mejillas */}
+          <ellipse cx="220" cy="130" rx="3.5" ry="2" fill="#f5b9a0" opacity="0.55" />
+          <ellipse cx="260" cy="130" rx="3.5" ry="2" fill="#f5b9a0" opacity="0.55" />
+
+          {/* Boca sonrisa */}
+          <path d="M232 136 Q 240 141 248 136" stroke="#1e293b" strokeWidth="1.6" fill="none" strokeLinecap="round" />
         </g>
 
-        {/* Planta derecha */}
-        <g transform="translate(395, 280)">
-          <rect x="0" y="50" width="44" height="40" rx="4" fill="#1e293b" />
-          <ellipse cx="22" cy="50" rx="22" ry="4" fill="#0f172a" />
-          <path d="M22 50 C 6 30 -2 10 8 -8 C 18 14 22 30 22 50" fill="url(#leaf)" />
-          <path d="M22 50 C 38 30 46 10 36 -8 C 26 14 22 30 22 50" fill="url(#leaf-d)" />
-          <path d="M22 50 C 14 28 14 8 22 -4 C 30 8 30 28 22 50" fill="url(#leaf)" />
-          <path d="M22 20 L 22 50" stroke="#3d4f17" strokeWidth="1.5" fill="none" />
+        {/* ════════ TABLET CON FIRMA (más pequeño, a la altura del pecho) ════════ */}
+        <g transform="translate(180, 218) rotate(-3)" filter="url(#card-shadow)">
+          {/* marco */}
+          <rect x="0" y="0" width="120" height="80" rx="6" fill="url(#tablet)" />
+          {/* pantalla */}
+          <rect x="5" y="5" width="110" height="70" rx="3" fill="url(#tablet-screen)" />
+          {/* header */}
+          <rect x="5" y="5" width="110" height="12" rx="3" fill="#A8CF45" />
+          <rect x="5" y="14" width="110" height="3" fill="#A8CF45" />
+          <circle cx="11" cy="11" r="1.8" fill="white" opacity="0.85" />
+          <rect x="17" y="9" width="32" height="2" rx="1" fill="white" opacity="0.85" />
+          <rect x="17" y="13" width="20" height="1.5" rx="1" fill="white" opacity="0.6" />
+
+          {/* label */}
+          <rect x="11" y="23" width="32" height="2.5" rx="1" fill="#94a3b8" />
+          <rect x="11" y="28" width="46" height="1.5" rx="1" fill="#cbd5e1" />
+
+          {/* campo de firma */}
+          <rect x="11" y="36" width="98" height="24" rx="2.5" fill="white" stroke="#cbd5e1" strokeWidth="0.8" />
+          <line x1="15" y1="55" x2="92" y2="55" stroke="#cbd5e1" strokeWidth="0.6" />
+          {/* firma manuscrita */}
+          <path
+            d="M16 51 C 21 45 26 54 32 48 C 38 42 43 54 50 49 C 57 44 62 53 70 48 C 78 43 83 51 90 47"
+            stroke="#1e293b"
+            strokeWidth="1.6"
+            fill="none"
+            strokeLinecap="round"
+          />
+          {/* check de verificado */}
+          <circle cx="97" cy="44" r="6" fill="#A8CF45" />
+          <path d="M94 44 L96.5 46.5 L100 41.5" stroke="white" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* footer */}
+          <rect x="11" y="65" width="36" height="1.5" rx="1" fill="#cbd5e1" />
+          <rect x="11" y="69" width="26" height="1.5" rx="1" fill="#cbd5e1" />
+          <rect x="83" y="66" width="24" height="6" rx="2" fill="#A8CF45" />
+          <rect x="88" y="68.5" width="14" height="1.5" rx="1" fill="white" />
+        </g>
+
+        {/* Manos agarrando el tablet POR LOS LADOS */}
+        <ellipse cx="188" cy="248" rx="9" ry="7" fill="url(#skin)" />
+        <ellipse cx="292" cy="248" rx="9" ry="7" fill="url(#skin)" />
+        {/* pulgares */}
+        <ellipse cx="194" cy="240" rx="4" ry="2.5" fill="url(#skin)" transform="rotate(-30 194 240)" />
+        <ellipse cx="286" cy="240" rx="4" ry="2.5" fill="url(#skin)" transform="rotate(30 286 240)" />
+
+        {/* Líneas de acción (curvas alrededor del tablet) */}
+        <path d="M315 240 Q 332 232 330 215" stroke="#A8CF45" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeDasharray="2 3" opacity="0.6" />
+        <path d="M165 240 Q 148 232 150 215" stroke="#A8CF45" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeDasharray="2 3" opacity="0.6" />
+
+        {/* Planta (esquina inferior izquierda) */}
+        <g transform="translate(35, 305)">
+          <rect x="0" y="44" width="40" height="34" rx="4" fill="#1e293b" />
+          <ellipse cx="20" cy="44" rx="20" ry="4" fill="#0f172a" />
+          <path d="M20 44 C 6 28 -2 12 6 -4 C 16 14 20 28 20 44" fill="url(#leaf)" />
+          <path d="M20 44 C 34 28 42 12 34 -4 C 24 14 20 28 20 44" fill="url(#leaf-d)" />
+          <path d="M20 44 C 12 26 12 8 20 -2 C 28 8 28 26 20 44" fill="url(#leaf)" />
+          <path d="M20 20 L 20 44" stroke="#3d4f17" strokeWidth="1.5" fill="none" />
         </g>
       </svg>
     </div>

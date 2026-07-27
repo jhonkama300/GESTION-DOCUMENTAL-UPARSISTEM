@@ -9,14 +9,91 @@ export const TIPOS_DOCUMENTO = [
 ]
 
 export const EPS_COLOMBIA = [
-  'Sanitas', 'Nueva EPS', 'Sura', 'Compensar', 'Famisanar', 'Salud Total',
-  'Coomeva', 'Medimás', 'Aliansalud', 'Cafesalud', 'Comfenalco', 'Comfandi',
-  'Comfachocó', 'Comfamiliar', 'Cajacopi', 'Capresoca', 'Capital Salud',
-  'Savia Salud', 'Dusakawi', 'Asmet Salud', 'Ecoopsos', 'Mallamas',
-  'Pijaos Salud', 'Anas Wayuu', 'Mutual Ser', 'Coosalud', 'SOS',
-  'Cruz Blanca', 'Sanidad Militar', 'Policía Nacional',
-  'Fondo de Prestaciones Sociales del Magisterio', 'Universidad Nacional',
+  { label: 'Sanitas',                value: 'Sanitas',                regimen: 'Contributivo', region: 'Nacional',         estrellas: 5, cobertura: '5.7M' },
+  { label: 'Sura',                   value: 'Sura',                   regimen: 'Contributivo', region: 'Nacional',         estrellas: 5, cobertura: '4.9M' },
+  { label: 'Nueva EPS',              value: 'Nueva EPS',              regimen: 'Subsidiado',   region: 'Nacional',         estrellas: 3, cobertura: '4.1M' },
+  { label: 'Compensar',              value: 'Compensar',              regimen: 'Contributivo', region: 'Bogotá · C/marca', estrellas: 4, cobertura: '2.8M' },
+  { label: 'Famisanar',              value: 'Famisanar',              regimen: 'Contributivo', region: 'Bogotá · C/marca', estrellas: 4, cobertura: '2.5M' },
+  { label: 'Salud Total',            value: 'Salud Total',            regimen: 'Contributivo', region: 'Nacional',         estrellas: 4, cobertura: '2.3M' },
+  { label: 'Coomeva',                value: 'Coomeva',                regimen: 'Contributivo', region: 'Valle · Cauca',    estrellas: 3, cobertura: '2.0M' },
+  { label: 'Medimás',                value: 'Medimás',                regimen: 'Subsidiado',   region: 'Nacional',         estrellas: 3, cobertura: '1.8M' },
+  { label: 'SOS',                    value: 'SOS',                    regimen: 'Contributivo', region: 'Antioquia',        estrellas: 4, cobertura: '1.6M' },
+  { label: 'Aliansalud',             value: 'Aliansalud',             regimen: 'Contributivo', region: 'Bogotá',           estrellas: 4, cobertura: '1.4M' },
+  { label: 'Cafesalud',              value: 'Cafesalud',              regimen: 'Contributivo', region: 'Valle · Cauca',    estrellas: 1, cobertura: 'Liquidada' },
+  { label: 'Comfenalco Antioquia',   value: 'Comfenalco Antioquia',   regimen: 'Subsidiado',   region: 'Antioquia',        estrellas: 3, cobertura: '1.1M' },
+  { label: 'Comfandi',               value: 'Comfandi',               regimen: 'Subsidiado',   region: 'Valle del Cauca',   estrellas: 3, cobertura: '1.0M' },
+  { label: 'Comfamiliar Atlantico',  value: 'Comfamiliar Atlantico',  regimen: 'Subsidiado',   region: 'Atlántico',         estrellas: 3, cobertura: '0.9M' },
+  { label: 'Cajacopi',               value: 'Cajacopi',               regimen: 'Subsidiado',   region: 'Atlántico',         estrellas: 3, cobertura: '0.7M' },
+  { label: 'Capital Salud',          value: 'Capital Salud',          regimen: 'Subsidiado',   region: 'Bogotá',           estrellas: 3, cobertura: '0.7M' },
+  { label: 'Capresoca',              value: 'Capresoca',              regimen: 'Contributivo', region: 'Casanare',          estrellas: 3, cobertura: '0.4M' },
+  { label: 'Savia Salud',            value: 'Savia Salud',            regimen: 'Subsidiado',   region: 'Antioquia',        estrellas: 3, cobertura: '0.5M' },
+  { label: 'Comfachocó',             value: 'Comfachocó',             regimen: 'Subsidiado',   region: 'Chocó',             estrellas: 2, cobertura: '0.3M' },
+  { label: 'Dusakawi',               value: 'Dusakawi',               regimen: 'Subsidiado',   region: 'La Guajira',       estrellas: 2, cobertura: '0.3M' },
+  { label: 'Asmet Salud',            value: 'Asmet Salud',            regimen: 'Subsidiado',   region: 'Cauca',            estrellas: 2, cobertura: '0.4M' },
+  { label: 'Ecoopsos',               value: 'Ecoopsos',               regimen: 'Subsidiado',   region: 'Nacional',         estrellas: 2, cobertura: '0.3M' },
+  { label: 'Mallamas',               value: 'Mallamas',               regimen: 'Subsidiado',   region: 'Nariño',           estrellas: 2, cobertura: '0.3M' },
+  { label: 'Pijaos Salud',           value: 'Pijaos Salud',           regimen: 'Subsidiado',   region: 'Tolima',           estrellas: 2, cobertura: '0.2M' },
+  { label: 'Anas Wayuu',             value: 'Anas Wayuu',             regimen: 'Subsidiado',   region: 'La Guajira',       estrellas: 2, cobertura: '0.2M' },
+  { label: 'Mutual Ser',             value: 'Mutual Ser',             regimen: 'Subsidiado',   region: 'Bolívar',          estrellas: 3, cobertura: '0.4M' },
+  { label: 'Coosalud',               value: 'Coosalud',               regimen: 'Subsidiado',   region: 'Sucre',            estrellas: 3, cobertura: '0.5M' },
+  { label: 'Cruz Blanca',            value: 'Cruz Blanca',            regimen: 'Subsidiado',   region: 'Nacional',         estrellas: 1, cobertura: 'Liquidada' },
+  { label: 'Sanidad Militar',        value: 'Sanidad Militar',        regimen: 'Especial',     region: 'Nacional',         estrellas: 5, cobertura: 'Fuerzas Militares' },
+  { label: 'Policía Nacional',       value: 'Policía Nacional',       regimen: 'Especial',     region: 'Nacional',         estrellas: 5, cobertura: 'Policía activa' },
+  { label: 'Fondo de Prestaciones Sociales del Magisterio', value: 'Fondo de Prestaciones Sociales del Magisterio', regimen: 'Especial', region: 'Nacional', estrellas: 4, cobertura: 'Docentes' },
+  { label: 'Universidad Nacional',   value: 'Universidad Nacional',   regimen: 'Especial',     region: 'Bogotá',           estrellas: 4, cobertura: 'Comunidad UNAL' },
+]  
+
+export const TIPOS_SANGRE = [
+  { label: 'O-',  value: 'O-',  grupo: 'O',  rh: '-', frecuencia: '4%',   puedeDonarA: 'Todos',          puedeRecibirDe: 'O-' },
+  { label: 'O+',  value: 'O+',  grupo: 'O',  rh: '+', frecuencia: '38%',  puedeDonarA: 'O+, A+, B+, AB+', puedeRecibirDe: 'O-, O+' },
+  { label: 'A-',  value: 'A-',  grupo: 'A',  rh: '-', frecuencia: '3%',   puedeDonarA: 'A-, A+, AB-, AB+', puedeRecibirDe: 'O-, A-' },
+  { label: 'A+',  value: 'A+',  grupo: 'A',  rh: '+', frecuencia: '27%',  puedeDonarA: 'A+, AB+',        puedeRecibirDe: 'O-, O+, A-, A+' },
+  { label: 'B-',  value: 'B-',  grupo: 'B',  rh: '-', frecuencia: '1%',   puedeDonarA: 'B-, B+, AB-, AB+', puedeRecibirDe: 'O-, B-' },
+  { label: 'B+',  value: 'B+',  grupo: 'B',  rh: '+', frecuencia: '10%',  puedeDonarA: 'B+, AB+',        puedeRecibirDe: 'O-, O+, B-, B+' },
+  { label: 'AB-', value: 'AB-', grupo: 'AB', rh: '-', frecuencia: '0.5%', puedeDonarA: 'AB-, AB+',       puedeRecibirDe: 'O-, A-, B-, AB-' },
+  { label: 'AB+', value: 'AB+', grupo: 'AB', rh: '+', frecuencia: '3.5%', puedeDonarA: 'AB+',            puedeRecibirDe: 'Todos' },
+]  
+
+export const PARENTESCOS = [
+  'Madre', 'Padre', 'Esposo/a', 'Hijo/a', 'Hermano/a',
+  'Tío/a', 'Abuelo/a', 'Sobrino/a', 'Primo/a', 'Amigo/a', 'Otro',
 ]
+
+export const AFP_COLOMBIA = [
+  { label: 'Porvenir',      value: 'Porvenir',      tipo: 'Privada', comision: '1.5%', fondoSolidaridad: '1.0%', patrimonio: '$ 78.4B', estrellas: 4 },
+  { label: 'Protección',    value: 'Protección',    tipo: 'Privada', comision: '1.4%', fondoSolidaridad: '1.0%', patrimonio: '$ 64.2B', estrellas: 4 },
+  { label: 'Colfondos',     value: 'Colfondos',     tipo: 'Privada', comision: '1.6%', fondoSolidaridad: '1.0%', patrimonio: '$ 32.1B', estrellas: 3 },
+  { label: 'Skandia',       value: 'Skandia',       tipo: 'Privada', comision: '1.0%', fondoSolidaridad: '1.0%', patrimonio: '$ 18.7B', estrellas: 4 },
+  { label: 'Old Mutual',    value: 'Old Mutual',    tipo: 'Privada', comision: '1.4%', fondoSolidaridad: '1.0%', patrimonio: '$  9.5B', estrellas: 3 },
+  { label: 'Colpensiones',  value: 'Colpensiones',  tipo: 'Pública', comision: '0.5%', fondoSolidaridad: '0.0%', patrimonio: '$ 156.3B', estrellas: 4, publica: true },
+]
+
+export const ARL_COLOMBIA = [
+  { label: 'Sura',         value: 'Sura',         riesgoCubierto: 'Todos los niveles',  estrellas: 5 },
+  { label: 'Bolívar',      value: 'Bolívar',      riesgoCubierto: 'I–V',               estrellas: 4 },
+  { label: 'Colpatria',    value: 'Colpatria',    riesgoCubierto: 'I–V',               estrellas: 4 },
+  { label: 'Positiva',     value: 'Positiva',     riesgoCubierto: 'I–V',               estrellas: 4 },
+  { label: 'Mapfre',       value: 'Mapfre',       riesgoCubierto: 'I–V',               estrellas: 4 },
+  { label: 'Liberty',      value: 'Liberty',      riesgoCubierto: 'I–V',               estrellas: 3 },
+  { label: 'La Equidad',   value: 'La Equidad',   riesgoCubierto: 'I–IV',              estrellas: 3 },
+  { label: 'Alba',         value: 'Alba',         riesgoCubierto: 'I–III',             estrellas: 3 },
+  { label: 'Aurora',       value: 'Aurora',       riesgoCubierto: 'I–IV',              estrellas: 2 },
+]
+
+export const CAJA_COMPENSACION_COLOMBIA = [
+  { label: 'Compensar',         value: 'Compensar',         region: 'Bogotá, Cundinamarca',  cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación', 'Recreación'] },
+  { label: 'Cafam',             value: 'Cafam',             region: 'Bogotá, Cundinamarca',  cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación', 'Recreación'] },
+  { label: 'Colsubsidio',       value: 'Colsubsidio',       region: 'Bogotá, Cundinamarca',  cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación', 'Recreación'] },
+  { label: 'Comfenalco Antioquia', value: 'Comfenalco Antioquia', region: 'Antioquia',        cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación', 'Recreación'] },
+  { label: 'Comfama',           value: 'Comfama',           region: 'Antioquia',            cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación', 'Recreación'] },
+  { label: 'Comfandi',          value: 'Comfandi',          region: 'Valle del Cauca',      cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación', 'Recreación'] },
+  { label: 'Comfenalco Valle',  value: 'Comfenalco Valle',  region: 'Valle del Cauca',      cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación'] },
+  { label: 'Comfamiliar Atlantico', value: 'Comfamiliar Atlantico', region: 'Atlántico',      cuota: '2.0%', servicios: ['Salud', 'Vivienda', 'Educación', 'Recreación'] },
+  { label: 'Comfachocó',        value: 'Comfachocó',        region: 'Chocó',                cuota: '2.0%', servicios: ['Salud', 'Vivienda'] },
+  { label: 'Comfacundi',        value: 'Comfacundi',        region: 'Cundinamarca',         cuota: '0.6%', servicios: ['Vivienda', 'Recreación'] },
+  { label: 'Comfamiliar Huila', value: 'Comfamiliar Huila', region: 'Huila',                cuota: '2.0%', servicios: ['Salud', 'Vivienda'] },
+  { label: 'Comfagiros',        value: 'Comfagiros',        region: 'Norte de Santander',   cuota: '2.0%', servicios: ['Salud', 'Vivienda'] },
+]  
 
 export const PAISES = [
   {

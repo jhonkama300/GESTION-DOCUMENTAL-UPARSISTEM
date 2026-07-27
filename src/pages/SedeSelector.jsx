@@ -58,10 +58,10 @@ export default function SedeSelector() {
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] px-3 py-1.5 rounded-full border border-brand-500/30 text-brand-700 bg-brand-50">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse-slow" />
-            {user?.sedes?.length || 0} sedes disponibles
+            {user?.sedes?.length || 0} organizaciones  disponibles
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mt-4 tracking-tight">
-            ¿Con qué sede quieres{' '}
+            ¿Con qué organización quieres{' '}
             <span className="relative inline-block" style={{ color: '#A8CF45' }}>
               trabajar?
               <svg className="absolute -bottom-2 left-0 w-full" height="8" viewBox="0 0 200 8" preserveAspectRatio="none">
@@ -100,12 +100,12 @@ export default function SedeSelector() {
                 {s.nombre}
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {s.descripcion || 'Sede registrada en el sistema'}
+                {s.descripcion || 'Organizacion registrada en el sistema'}
               </p>
 
               <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
-                  {s.id === 1 ? 'Sede principal' : 'Sede aliada'}
+                  {s.id === 1 ? 'Organizacion principal' : 'Organizacion aliada'}
                 </span>
                 <span className="text-xs font-semibold text-brand-600 group-hover:underline">
                   Ingresar →
