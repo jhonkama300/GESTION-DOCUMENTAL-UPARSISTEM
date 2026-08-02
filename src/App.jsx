@@ -3,19 +3,22 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import AuthLayout from './layouts/AuthLayout.jsx'
 import MainLayout from './layouts/MainLayout.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
-import { useSede } from './context/SedeContext.jsx'
+import { useEntidad } from './context/EntidadContext.jsx'
 import { useAuth } from './context/AuthContext.jsx'
 
 import Login from './pages/Login.jsx'
-import SedeSelector from './pages/SedeSelector.jsx'
+import SeleccionarEntidad from './pages/SeleccionarEntidad.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Empleados from './pages/Empleados.jsx'
-import Contratos from './pages/Contratos.jsx'
-import Plantillas from './pages/Plantillas.jsx'
+import PlantillasAdmin from './pages/admin/PlantillasAdmin.jsx'
+import DisenadorPlantilla from './pages/admin/DisenadorPlantilla.jsx'
+import CamposCatalogo from './pages/admin/CamposCatalogo.jsx'
+import ContratosAdmin from './pages/admin/ContratosAdmin.jsx'
 import Documentos from './pages/Documentos.jsx'
+import DocumentosWizard from './pages/DocumentosWizard.jsx'
 import Certificaciones from './pages/Certificaciones.jsx'
 import Horarios from './pages/Horarios.jsx'
-import Sedes from './pages/Sedes.jsx'
+import Entidades from './pages/Entidades.jsx'
 import Usuarios from './pages/Usuarios.jsx'
 import Reportes from './pages/Reportes.jsx'
 import Auditoria from './pages/Auditoria.jsx'
@@ -25,16 +28,16 @@ import Perfil from './pages/Perfil.jsx'
 import Ayuda from './pages/Ayuda.jsx'
 import NotFound from './pages/NotFound.jsx'
 
-function RequireSede({ children }) {
-  const { currentSede } = useSede()
+function RequireEntidad({ children }) {
+  const { currentEntidad } = useEntidad()
   const { user, loading: authLoading } = useAuth()
   const location = useLocation()
   if (authLoading) {
     return <FullScreenLoader />
   }
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />
-  if (!currentSede) {
-    return <Navigate to="/seleccionar-sede" state={{ from: location }} replace />
+  if (!currentEntidad) {
+    return <Navigate to="/seleccionar-entidad" state={{ from: location }} replace />
   }
   return children
 }
@@ -66,10 +69,10 @@ export default function App() {
       />
 
       <Route
-        path="/seleccionar-sede"
+        path="/seleccionar-entidad"
         element={
           <ProtectedRoute>
-            <SedeSelector />
+            <SeleccionarEntidad />
           </ProtectedRoute>
         }
       />
@@ -77,21 +80,25 @@ export default function App() {
       <Route
         element={
           <ProtectedRoute>
-            <RequireSede>
+            <RequireEntidad>
               <MainLayout />
-            </RequireSede>
+            </RequireEntidad>
           </ProtectedRoute>
         }
       >
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/empleados" element={<Empleados />} />
-        <Route path="/contratos" element={<Contratos />} />
-        <Route path="/plantillas" element={<Plantillas />} />
+        <Route path="/contratos" element={<ContratosAdmin />} />
+        <Route path="/admin/plantillas" element={<PlantillasAdmin />} />
+        <Route path="/admin/plantillas/:id" element={<DisenadorPlantilla />} />
+        <Route path="/admin/campos-catalogo" element={<CamposCatalogo />} />
+        <Route path="/admin/contratos" element={<ContratosAdmin />} />
         <Route path="/documentos" element={<Documentos />} />
+        <Route path="/generar-documento" element={<DocumentosWizard />} />
         <Route path="/certificaciones" element={<Certificaciones />} />
         <Route path="/horarios" element={<Horarios />} />
-        <Route path="/sedes" element={<Sedes />} />
+        <Route path="/entidades" element={<Entidades />} />
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/reportes" element={<Reportes />} />
         <Route path="/auditoria" element={<Auditoria />} />

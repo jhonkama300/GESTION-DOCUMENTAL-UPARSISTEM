@@ -28,9 +28,43 @@ function formatLocationDisplay(value) {
   return ''
 }
 
+/* Resuelve {paisCode, deptoCode} a partir del string guardado
+ * "Colombia - Valledupar - Cesar" (País - Ciudad - Depto). */
+function resolveLocationCodes(value) {
+  const empty = { paisCode: '', deptoCode: '' }
+  if (!value || typeof value !== 'string') return empty
+  const parts = value.split(' - ').map((p) => p.trim()).filter(Boolean)
+  if (parts.length < 2) return empty
+  const paisName = parts[0]
+  const ciudad = parts[1]
+  const deptoName = parts[2] || null
+  const pais = PAISES.find((p) => p.name.toLowerCase() === paisName.toLowerCase())
+  if (!pais) return empty
+  let depto = null
+  if (deptoName) {
+    depto = pais.departamentos.find((d) => d.name.toLowerCase() === deptoName.toLowerCase())
+  } else if (ciudad) {
+    // Si no hay depto en el string, buscar el primer depto que contenga la ciudad
+    depto = pais.departamentos.find((d) => d.ciudades.some((c) => c.toLowerCase() === ciudad.toLowerCase()))
+  }
+  return { paisCode: pais.code, deptoCode: depto?.code || '' }
+}
+
 export default function LocationPicker({ control, name, label, required, error, defaultValue }) {
-  const [paisCode, setPaisCode] = useState(defaultValue?.paisCode || '')
-  const [deptoCode, setDeptoCode] = useState(defaultValue?.deptoCode || '')
+  /* defaultValue puede ser:
+   *  - undefined / {}              → estado vacío (nuevo empleado)
+   *  - {paisCode, deptoCode}       → estado inicial explícito
+   *  - string "Pais - Ciudad - ..." → se resuelve vía resolveLocationCodes */
+  const resolveDefault = () => {
+    if (defaultValue && (defaultValue.paisCode || defaultValue.deptoCode)) {
+      return { paisCode: defaultValue.paisCode || '', deptoCode: defaultValue.deptoCode || '' }
+    }
+    if (typeof defaultValue === 'string') return resolveLocationCodes(defaultValue)
+    return { paisCode: '', deptoCode: '' }
+  }
+  const initial = resolveDefault()
+  const [paisCode, setPaisCode] = useState(initial.paisCode)
+  const [deptoCode, setDeptoCode] = useState(initial.deptoCode)
   const [search, setSearch] = useState('')
   const op = useRef(null)
   const [hovered, setHovered] = useState('')
@@ -47,6 +81,15 @@ export default function LocationPicker({ control, name, label, required, error, 
       setDeptoCode('')
     }
   }, [paisCode])
+
+  /* Sincronizar estado cuando defaultValue cambia (ej. al cambiar de empleado
+   * a editar). Solo si NO hay selección manual del usuario aún. */
+  useEffect(() => {
+    const r = resolveDefault()
+    if (r.paisCode && r.paisCode !== paisCode) setPaisCode(r.paisCode)
+    if (r.deptoCode !== deptoCode) setDeptoCode(r.deptoCode)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValue])
 
   const commit = (text) => {
     op.current?.hide()

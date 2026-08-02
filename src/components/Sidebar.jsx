@@ -4,30 +4,36 @@ import { useAuth } from '../context/AuthContext.jsx'
 const MENU = [
   { to: '/dashboard', icon: 'pi-th-large', label: 'Dashboard' },
   { to: '/empleados', icon: 'pi-users', label: 'Empleados' },
-  { to: '/contratos', icon: 'pi-file-edit', label: 'Contratos' },
-  { to: '/plantillas', icon: 'pi-clone', label: 'Plantillas' },
+  { to: '/generar-documento', icon: 'pi-plus-circle', label: 'Generar documento' },
   { to: '/documentos', icon: 'pi-folder-open', label: 'Documentos' },
   { to: '/certificaciones', icon: 'pi-id-card', label: 'Certificaciones' },
   { to: '/horarios', icon: 'pi-clock', label: 'Horarios' },
-  { to: '/sedes', icon: 'pi-building', label: 'Sedes' },
-  { to: '/usuarios', icon: 'pi-user-edit', label: 'Usuarios', roles: ['Administrador', 'RRHH'] },
-  { to: '/reportes', icon: 'pi-chart-bar', label: 'Reportes', roles: ['Administrador', 'RRHH'] },
+  { to: '/entidades', icon: 'pi-building', label: 'Entidades', roles: ['Administrador'] },
+  { to: '/usuarios', icon: 'pi-user-edit', label: 'Usuarios', roles: ['Administrador'] },
+  { to: '/reportes', icon: 'pi-chart-bar', label: 'Reportes', roles: ['Administrador', 'Administrativo'] },
   { to: '/auditoria', icon: 'pi-shield', label: 'Auditoría', roles: ['Administrador'] },
   { to: '/configuracion', icon: 'pi-cog', label: 'Configuración', roles: ['Administrador'] },
+  { to: '/admin/plantillas', icon: 'pi-sitemap', label: 'Plantillas', roles: ['Administrador'] },
+  { to: '/admin/contratos', icon: 'pi-file-edit', label: 'Contratos', roles: ['Administrador'] },
+  { to: '/admin/campos-catalogo', icon: 'pi-database', label: 'Catálogo de Campos', roles: ['Administrador'] },
 ]
 
 const SECTIONS = [
   {
     title: 'Principal',
-    items: ['/dashboard', '/empleados', '/contratos', '/plantillas'],
+    items: ['/dashboard', '/empleados', '/generar-documento'],
   },
   {
     title: 'Documentos',
-    items: ['/documentos', '/certificaciones', '/horarios', '/sedes'],
+    items: ['/documentos', '/certificaciones', '/horarios', '/entidades'],
   },
   {
     title: 'Administración',
     items: ['/usuarios', '/reportes', '/auditoria', '/configuracion'],
+  },
+  {
+    title: 'Motor Documental',
+    items: ['/admin/plantillas', '/admin/contratos', '/admin/campos-catalogo'],
   },
 ]
 

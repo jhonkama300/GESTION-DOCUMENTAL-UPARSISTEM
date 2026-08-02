@@ -1,20 +1,20 @@
 const MOCK_EMPLEADOS = [
   // Sede 1: Uparsistem Bogotá
-  { id: 1, sedeId: 1, cedula: '1234567890', nombre: 'Laura Pérez', cargo: 'Desarrolladora Senior', area: 'Tecnología', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2022-03-15' },
-  { id: 2, sedeId: 1, cedula: '9876543210', nombre: 'Carlos Méndez', cargo: 'Diseñador UX', area: 'Producto', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2023-01-10' },
-  { id: 3, sedeId: 1, cedula: '1122334455', nombre: 'Ana Rodríguez', cargo: 'Analista RRHH', area: 'Talento Humano', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2021-07-22' },
-  { id: 4, sedeId: 1, cedula: '5566778899', nombre: 'Diego Ramírez', cargo: 'Contador', area: 'Financiera', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2020-11-05' },
-  { id: 5, sedeId: 1, cedula: '6677889900', nombre: 'Sofía Castro', cargo: 'Practicante', area: 'Marketing', sede: 'Bogotá', estado: 'Inactivo', fechaIngreso: '2024-08-01' },
-  { id: 6, sedeId: 1, cedula: '7788990011', nombre: 'Andrés López', cargo: 'Project Manager', area: 'Operaciones', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2022-09-12' },
+  { id: 1, sedeId: 1, cedula: '1234567890', nombre: 'Laura Pérez', cargo: 'Desarrolladora Senior', area: 'Tecnología', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2022-03-15', direccion: 'Calle 100 #15-20, Bogotá D.C.', telefono: '+57 301 555 1234', correo: 'laura.perez@uparsistem.com', fechaNacimiento: '1995-03-15', lugarNacimiento: 'Bogotá D.C.', lugarExpedicion: 'Bogotá D.C.' },
+  { id: 2, sedeId: 1, cedula: '9876543210', nombre: 'Carlos Méndez', cargo: 'Diseñador UX', area: 'Producto', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2023-01-10', direccion: 'Carrera 7 #45-30, Bogotá D.C.', telefono: '+57 302 555 2345', correo: 'carlos.mendez@uparsistem.com', fechaNacimiento: '1992-07-22', lugarNacimiento: 'Medellín', lugarExpedicion: 'Bogotá D.C.' },
+  { id: 3, sedeId: 1, cedula: '1122334455', nombre: 'Ana Rodríguez', cargo: 'Analista RRHH', area: 'Talento Humano', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2021-07-22', direccion: 'Calle 72 #10-34, Bogotá D.C.', telefono: '+57 303 555 3456', correo: 'ana.rodriguez@uparsistem.com', fechaNacimiento: '1988-11-30', lugarNacimiento: 'Cali', lugarExpedicion: 'Bogotá D.C.' },
+  { id: 4, sedeId: 1, cedula: '5566778899', nombre: 'Diego Ramírez', cargo: 'Contador', area: 'Financiera', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2020-11-05', direccion: 'Avenida 19 #120-30, Bogotá D.C.', telefono: '+57 304 555 4567', correo: 'diego.ramirez@uparsistem.com', fechaNacimiento: '1985-05-10', lugarNacimiento: 'Bogotá D.C.', lugarExpedicion: 'Bogotá D.C.' },
+  { id: 5, sedeId: 1, cedula: '6677889900', nombre: 'Sofía Castro', cargo: 'Practicante', area: 'Marketing', sede: 'Bogotá', estado: 'Inactivo', fechaIngreso: '2024-08-01', direccion: 'Calle 45 #8-12, Bogotá D.C.', telefono: '+57 305 555 5678', correo: 'sofia.castro@uparsistem.com', fechaNacimiento: '2000-02-14', lugarNacimiento: 'Bogotá D.C.', lugarExpedicion: 'Bogotá D.C.' },
+  { id: 6, sedeId: 1, cedula: '7788990011', nombre: 'Andrés López', cargo: 'Project Manager', area: 'Operaciones', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2022-09-12', direccion: 'Carrera 15 #93-50, Bogotá D.C.', telefono: '+57 306 555 6789', correo: 'andres.lopez@uparsistem.com', fechaNacimiento: '1990-08-25', lugarNacimiento: 'Barranquilla', lugarExpedicion: 'Bogotá D.C.' },
 
   // Sede 1: Uparsistem Medellín
-  { id: 7, sedeId: 1, cedula: '2233445566', nombre: 'María Salazar', cargo: 'Coordinadora Académica', area: 'Talento Humano', sede: 'Medellín', estado: 'Activo', fechaIngreso: '2021-03-10' },
-  { id: 8, sedeId: 1, cedula: '3344556677', nombre: 'Jorge Herrera', cargo: 'Docente', area: 'Operaciones', sede: 'Medellín', estado: 'Activo', fechaIngreso: '2022-06-15' },
+  { id: 7, sedeId: 1, cedula: '2233445566', nombre: 'María Salazar', cargo: 'Coordinadora Académica', area: 'Talento Humano', sede: 'Medellín', estado: 'Activo', fechaIngreso: '2021-03-10', direccion: 'Calle 10 #36-20, Medellín', telefono: '+57 304 555 7890', correo: 'maria.salazar@uparsistem.com', fechaNacimiento: '1987-04-18', lugarNacimiento: 'Medellín', lugarExpedicion: 'Medellín' },
+  { id: 8, sedeId: 1, cedula: '3344556677', nombre: 'Jorge Herrera', cargo: 'Docente', area: 'Operaciones', sede: 'Medellín', estado: 'Activo', fechaIngreso: '2022-06-15', direccion: 'Carrera 50 #54-18, Medellín', telefono: '+57 305 555 8901', correo: 'jorge.herrera@uparsistem.com', fechaNacimiento: '1983-12-05', lugarNacimiento: 'Bucaramanga', lugarExpedicion: 'Medellín' },
 
   // Sede 2: Jeanpiaget Bogotá
-  { id: 9, sedeId: 2, cedula: '4455667788', nombre: 'Pedro Gómez', cargo: 'Director Académico', area: 'Operaciones', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2018-02-01' },
-  { id: 10, sedeId: 2, cedula: '5566778890', nombre: 'Camila Torres', cargo: 'Psicóloga', area: 'Talento Humano', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2020-08-12' },
-  { id: 11, sedeId: 2, cedula: '6677889901', nombre: 'Roberto Silva', cargo: 'Profesor', area: 'Operaciones', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2019-04-20' },
+  { id: 9, sedeId: 2, cedula: '4455667788', nombre: 'Pedro Gómez', cargo: 'Director Académico', area: 'Operaciones', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2018-02-01', direccion: 'Calle 134 #7-83, Bogotá D.C.', telefono: '+57 307 555 9012', correo: 'pedro.gomez@jeanpiaget.edu.co', fechaNacimiento: '1975-09-15', lugarNacimiento: 'Bogotá D.C.', lugarExpedicion: 'Bogotá D.C.' },
+  { id: 10, sedeId: 2, cedula: '5566778890', nombre: 'Camila Torres', cargo: 'Psicóloga', area: 'Talento Humano', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2020-08-12', direccion: 'Carrera 19 #134-50, Bogotá D.C.', telefono: '+57 308 555 0123', correo: 'camila.torres@jeanpiaget.edu.co', fechaNacimiento: '1991-06-20', lugarNacimiento: 'Bogotá D.C.', lugarExpedicion: 'Bogotá D.C.' },
+  { id: 11, sedeId: 2, cedula: '6677889901', nombre: 'Roberto Silva', cargo: 'Profesor', area: 'Operaciones', sede: 'Bogotá', estado: 'Activo', fechaIngreso: '2019-04-20', direccion: 'Calle 80 #8-23, Bogotá D.C.', telefono: '+57 309 555 1234', correo: 'roberto.silva@jeanpiaget.edu.co', fechaNacimiento: '1980-03-08', lugarNacimiento: 'Tunja', lugarExpedicion: 'Bogotá D.C.' },
 ]
 
 const MOCK_CONTRATOS = [
@@ -24,13 +24,6 @@ const MOCK_CONTRATOS = [
   { id: 4, sedeId: 1, empleado: 'María Salazar', tipo: 'Término indefinido', inicio: '2021-03-10', fin: '—', estado: 'Vigente' },
   { id: 5, sedeId: 2, empleado: 'Pedro Gómez', tipo: 'Término indefinido', inicio: '2018-02-01', fin: '—', estado: 'Vigente' },
   { id: 6, sedeId: 2, empleado: 'Camila Torres', tipo: 'Término fijo', inicio: '2024-02-01', fin: '2025-02-01', estado: 'Vigente' },
-]
-
-const MOCK_PLANTILLAS = [
-  { id: 1, sedeId: 1, nombre: 'Contrato laboral indefinido', variables: 12, categoria: 'Contratos', actualizado: '2025-09-15' },
-  { id: 2, sedeId: 1, nombre: 'Contrato a término fijo', variables: 14, categoria: 'Contratos', actualizado: '2025-08-20' },
-  { id: 3, sedeId: 2, nombre: 'Contrato docente', variables: 16, categoria: 'Contratos', actualizado: '2025-10-01' },
-  { id: 4, sedeId: 2, nombre: 'Acuerdo educativo', variables: 10, categoria: 'Académico', actualizado: '2025-09-30' },
 ]
 
 export const SEDES = [
@@ -82,10 +75,6 @@ export const empleadosService = {
 
 export const contratosService = {
   list: (sedeId) => delay(MOCK_CONTRATOS.filter((c) => c.sedeId === sedeId)),
-}
-
-export const plantillasService = {
-  list: (sedeId) => delay(MOCK_PLANTILLAS.filter((p) => p.sedeId === sedeId)),
 }
 
 export const sedesService = {

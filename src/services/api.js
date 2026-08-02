@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useAuth } from '../context/AuthContext.jsx'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
@@ -22,9 +21,7 @@ api.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('gth_auth')
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'))
     }
     return Promise.reject(err)
   },

@@ -12,7 +12,7 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
-import { SedeProvider } from './context/SedeContext.jsx'
+import { EntidadProvider } from './context/EntidadContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -20,9 +20,9 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <ThemeProvider>
           <AuthProvider>
-            <SedeProvider>
+            <EntidadProvider>
               <App />
-            </SedeProvider>
+            </EntidadProvider>
           </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>

@@ -8,8 +8,9 @@ import { Avatar } from 'primereact/avatar'
 import { OverlayPanel } from 'primereact/overlaypanel'
 import { Controller, useForm, useWatch, useFormContext, FormProvider } from 'react-hook-form'
 import LocationPicker from './LocationPicker.jsx'
-import { useSede } from '../context/SedeContext.jsx'
-import { SEDES } from '../services/mock.data.js'
+import { useEntidad } from '../context/EntidadContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { entidadesService } from '../services/entidades.service.js'
 import {
   TIPOS_DOCUMENTO,
   EPS_COLOMBIA,
@@ -28,11 +29,30 @@ import {
 } from '../utils/programas.js'
 import { fieldInputClass, inputIconLeftClass, labelClass } from '../utils/styles.js'
 import { initials } from '../utils/format.js'
+import PhotoPreviewModal from './PhotoPreviewModal.jsx'
 
 const AREAS = AREAS_LABORALES
 const ESTADOS = ['Activo', 'Inactivo', 'Suspendido']
 
 const parentescoOptions = PARENTESCOS.map((p) => ({ label: p, value: p }))
+
+/* Mapea el area heurística del cargo (classifyCargo) al catálogo AREAS_LABORALES
+   para que el campo "area" de la lista de empleados coincida con lo registrado. */
+const CARGO_AREA_TO_LABORAL = {
+  'Alta dirección':   'Administración y Oficina',
+  'Dirección':        'Administración y Oficina',
+  'Coordinación':     'Operaciones y Logística',
+  'Análisis':         'Administración y Oficina',
+  'Técnica':          'Ingeniería',
+  'Tecnología':       'Tecnología y Sistemas',
+  'Educación':        'Educación y Docencia',
+  'Salud':            'Salud y Medicina',
+  'Legal/Finanzas':   'Finanzas y Contabilidad',
+  'Producción':       'Producción y Manufactura',
+  'Operativa':        'Operaciones y Logística',
+  'Soporte':          'Administración y Oficina',
+  'General':          'Administración y Oficina',
+}
 
 /* ───────── Configuración de los popovers (AFP, ARL, Caja, Cargo, Profesion, EPS, Sangre) ───────── */
 const REGIMEN_COLORS = {
@@ -228,6 +248,7 @@ const empty = {
   contactoNombre: '',
   contactoParentesco: null,
   contactoTelefono: '',
+  area: null,
   cargo: null,
   profesion: null,
   nivelAcademico: null,
@@ -237,7 +258,7 @@ const empty = {
   foto: '',
 }
 
-function buildDefaults(empleado, currentSede) {
+function buildDefaults(empleado, currentEntidad) {
   if (!empleado) return empty
   return {
     ...empty,
@@ -246,9 +267,9 @@ function buildDefaults(empleado, currentSede) {
     tipoDocumento: empleado.tipoDocumento || null,
     identificacion: empleado.identificacion || empleado.cedula || '',
     email: empleado.email || '',
-    fechaExpedicion: empleado.fechaExpedicion ? new Date(empleado.fechaExpedicion) : null,
+    fechaExpedicion: parseLocalDate(empleado.fechaExpedicion),
     lugarExpedicion: empleado.lugarExpedicion || '',
-    fechaNacimiento: empleado.fechaNacimiento ? new Date(empleado.fechaNacimiento) : null,
+    fechaNacimiento: parseLocalDate(empleado.fechaNacimiento),
     lugarNacimiento: empleado.lugarNacimiento || '',
     direccion: empleado.direccion || '',
     eps: empleado.eps || null,
@@ -259,15 +280,53 @@ function buildDefaults(empleado, currentSede) {
     contactoNombre: empleado.contactoNombre || '',
     contactoParentesco: empleado.contactoParentesco || null,
     contactoTelefono: empleado.contactoTelefono || '',
+    area: empleado.area || null,
     cargo: empleado.cargo || null,
     profesion: empleado.profesion || null,
     nivelAcademico: empleado.nivelAcademico || null,
-    sedeId: empleado.sedeId || currentSede?.id || null,
-    fechaIngreso: empleado.fechaIngreso ? new Date(empleado.fechaIngreso) : new Date(),
-    fechaFinal: empleado.fechaFinal ? new Date(empleado.fechaFinal) : null,
+    sedeId: empleado.sedeId || currentEntidad?.id || null,
+    fechaIngreso: parseLocalDate(empleado.fechaIngreso) || new Date(),
+    fechaFinal: parseLocalDate(empleado.fechaFinal),
     estado: empleado.estado || 'Activo',
     foto: empleado.foto || '',
   }
+}
+
+/* Convierte Date o string 'YYYY-MM-DD' a 'YYYY-MM-DD' en zona local del navegador.
+ * Evita el desfase de `toISOString()` (que pasa a UTC y puede cambiar el día). */
+function toLocalISODate(d) {
+  if (!d) return null
+  const date = d instanceof Date ? d : new Date(d)
+  if (Number.isNaN(date.getTime())) return null
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/* Parsea 'YYYY-MM-DD' (del backend) como Date LOCAL (no UTC).
+ * Sin esto, `new Date("2024-01-01")` se interpreta como UTC midnight
+ * y en Colombia (UTC-5) se desfasa al 31/12/2023 19:00. */
+function parseLocalDate(value) {
+  if (!value) return null
+  if (value instanceof Date) return value
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value))
+  if (!m) return null
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+}
+
+/* Parsea un string "País - Ciudad - Depto" o "País - Depto" guardado en BD
+ * y devuelve {paisCode, deptoCode, ciudad} para inicializar LocationPicker. */
+function parseLocationString(str) {
+  if (!str) return null
+  const parts = String(str).split(' - ').map((p) => p.trim()).filter(Boolean)
+  if (parts.length < 2) return null
+  // Formato guardado: "Pais - Ciudad - Depto"
+  const paisName = parts[0]
+  const ciudad = parts[1] || null
+  const deptoName = parts[2] || null
+  // Buscar coincidencias en colombia.js (necesita import — ver más abajo)
+  return { paisName, ciudad, deptoName }
 }
 
 const SECTION_FIELDS = {
@@ -285,22 +344,53 @@ const SECTIONS_META = [
 ]
 
 export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, empleado }) {
-  const { currentSede } = useSede()
+  const { currentEntidad } = useEntidad()
+  const { user } = useAuth()
+  const sedesOptions = user?.sedes || []
+  // Lista de TODAS las entidades del sistema (para el selector de entidad al editar).
+  // Se carga una vez al abrir el modal y se usa como fuente del <Dropdown>.
+  const [allEntidades, setAllEntidades] = useState([])
+  useEffect(() => {
+    let active = true
+    if (visible) {
+      entidadesService.list({ todos: true })
+        .then((list) => { if (active) setAllEntidades(Array.isArray(list) ? list : []) })
+        .catch(() => { if (active) setAllEntidades([]) })
+    }
+    return () => { active = false }
+  }, [visible])
+  const entidadesOptions = allEntidades
   const isEdit = !!empleado
   const methods = useForm({
-    defaultValues: buildDefaults(empleado, currentSede),
+    defaultValues: buildDefaults(empleado, currentEntidad),
     mode: 'onBlur',
   })
-  const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = methods
+  const { control, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = methods
 
   useEffect(() => {
-    if (visible) reset(buildDefaults(empleado, currentSede))
-  }, [visible, empleado, currentSede, reset])
+    if (visible) reset(buildDefaults(empleado, currentEntidad))
+    // Solo reset cuando cambia visible o empleado, NO cuando cambia currentEntidad
+    // (eso resetearía el form mientras el usuario edita si cambia la sede activa).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, empleado, reset])
 
-  const submit = async (formData) => {
+  /* Auto-rellenar "area" cuando el usuario selecciona un cargo.
+     Solo si area está vacía, para respetar la edición manual. */
+  const watchedCargo = useWatch({ control, name: 'cargo' })
+  useEffect(() => {
+    if (!watchedCargo) return
+    const cargoObj = CARGOS_ENRIQUECIDOS.find((c) => c.value === watchedCargo)
+    if (!cargoObj?.area) return
+    const currentArea = methods.getValues('area')
+    if (currentArea) return
+    const mapped = CARGO_AREA_TO_LABORAL[cargoObj.area]
+    if (mapped) setValue('area', mapped, { shouldDirty: false })
+  }, [watchedCargo, setValue, methods])
+
+    const submit = async (formData) => {
     await new Promise((r) => setTimeout(r, 600))
     const fullName = `${formData.nombres} ${formData.apellidos}`.trim()
-    const s = SEDES.find((x) => x.id === formData.sedeId)
+    const s = sedesOptions.find((x) => x.id === formData.sedeId)
     const result = {
       ...(empleado || {}),
       nombre: fullName,
@@ -310,16 +400,16 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
       profesion: formData.profesion,
       nivelAcademico: formData.nivelAcademico,
       sedeId: formData.sedeId,
-      sede: s?.nombre || currentSede?.nombre || 'Sin sede',
+      sede: s?.nombre || currentEntidad?.nombre || 'Sin sede',
       estado: formData.estado,
       tipoDocumento: formData.tipoDocumento,
       identificacion: formData.identificacion,
       cedula: formData.identificacion,
       email: formData.email,
       foto: formData.foto || '',
-      fechaExpedicion: formData.fechaExpedicion ? new Date(formData.fechaExpedicion).toISOString().slice(0, 10) : null,
+      fechaExpedicion: toLocalISODate(formData.fechaExpedicion),
       lugarExpedicion: formData.lugarExpedicion,
-      fechaNacimiento: formData.fechaNacimiento ? new Date(formData.fechaNacimiento).toISOString().slice(0, 10) : null,
+      fechaNacimiento: toLocalISODate(formData.fechaNacimiento),
       lugarNacimiento: formData.lugarNacimiento,
       direccion: formData.direccion,
       eps: formData.eps,
@@ -330,12 +420,13 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
       contactoNombre: formData.contactoNombre,
       contactoParentesco: formData.contactoParentesco,
       contactoTelefono: formData.contactoTelefono,
-      fechaIngreso: formData.fechaIngreso ? new Date(formData.fechaIngreso).toISOString().slice(0, 10) : null,
-      fechaFinal: formData.fechaFinal ? new Date(formData.fechaFinal).toISOString().slice(0, 10) : null,
+      area: formData.area,
+      fechaIngreso: toLocalISODate(formData.fechaIngreso),
+      fechaFinal: toLocalISODate(formData.fechaFinal),
       edad: formatEdad(formData.fechaNacimiento),
     }
     if (isEdit) onUpdate?.(empleado.id, result)
-    else onSave?.({ id: Date.now(), ...result, sedeId: formData.sedeId || currentSede?.id })
+    else onSave?.({ id: Date.now(), ...result, sedeId: formData.sedeId || currentEntidad?.id })
     onHide()
   }
 
@@ -389,9 +480,10 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
           <div className="flex flex-1 min-h-0">
           {/* â”€â”€ Sidebar con preview + progreso */}
           <SidebarPreview
-            currentSede={currentSede}
+            currentEntidad={currentEntidad}
             isEdit={isEdit}
             sections={SECTIONS_META}
+            sedesOptions={sedesOptions}
           />
 
           {/* â”€â”€ Form area */}
@@ -499,7 +591,7 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                       control={control}
                       name="lugarExpedicion"
                       label="Lugar de expedición"
-                      defaultValue={{}}
+                      defaultValue={empleado?.lugarExpedicion || ''}
                       error={errors.lugarExpedicion}
                     />
                   </div>
@@ -539,7 +631,7 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                       control={control}
                       name="lugarNacimiento"
                       label="Lugar de nacimiento"
-                      defaultValue={{}}
+                      defaultValue={empleado?.lugarNacimiento || ''}
                       error={errors.lugarNacimiento}
                     />
                   </div>
@@ -730,10 +822,32 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                       )}
                     />
                   </div>
+
+                  {/* Fila 2: ubicación organizacional + fechas */}
+                  <div className="col-span-12 sm:col-span-4">
+                    <Field label="Área" hint="Auto-completada desde el cargo" error={errors.area}>
+                      <Controller
+                        name="area"
+                        control={control}
+                        render={({ field }) => (
+                          <Dropdown
+                            value={field.value}
+                            onChange={(e) => field.onChange(e.value)}
+                            options={AREAS.map((a) => ({ label: a, value: a }))}
+                            placeholder="Seleccionar área"
+                            className="w-full"
+                            filter
+                            showClear={!!field.value}
+                            emptyMessage="Sin áreas"
+                          />
+                        )}
+                      />
+                    </Field>
+                  </div>
                   <div className="col-span-12 sm:col-span-3">
                     <label className={labelClass}>
                       <i className="pi pi-building text-[10px] text-brand-600" />
-                      Sede
+                      Entidad
                     </label>
                     <div className="flex justify-center">
                       {isEdit ? (
@@ -745,9 +859,11 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                             <Dropdown
                               value={field.value}
                               onChange={(e) => field.onChange(e.value)}
-                              options={SEDES.map((s) => ({ label: s.nombre, value: s.id }))}
-                              placeholder="Seleccionar sede"
+                              options={entidadesOptions.map((s) => ({ label: s.nombre, value: s.id }))}
+                              placeholder="Seleccionar entidad"
                               className="w-full max-w-[240px]"
+                              filter
+                              emptyMessage="Sin entidades"
                             />
                           )}
                         />
@@ -755,13 +871,13 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                         <div className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl border-2 border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/50 w-full max-w-[240px]">
                           <div
                             className="w-7 h-7 rounded-md flex items-center justify-center text-white text-[10px] font-bold shrink-0"
-                            style={{ background: currentSede?.color || '#A8CF45' }}
+                            style={{ background: currentEntidad?.color || '#A8CF45' }}
                           >
-                            {currentSede?.iniciales || '—'}
+                            {currentEntidad?.iniciales || '—'}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
-                              {currentSede?.nombre || 'Sin sede'}
+                              {currentEntidad?.nombre || 'Sin entidad'}
                             </p>
                           </div>
                           <i className="pi pi-lock text-[10px] text-slate-400" />
@@ -783,14 +899,14 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
                       />
                     </Field>
                   </div>
-                  <div className="col-span-12 sm:col-span-3">
-                    <Field label="F. final" hint="Déjalo vacío si es indefinido" error={errors.fechaFinal}>
+                  <div className="col-span-12 sm:col-span-2">
+                    <Field label="F. final" hint="Vacío si es indefinido" error={errors.fechaFinal}>
                       <Controller
                         name="fechaFinal"
                         control={control}
                         render={({ field }) => (
                           <div className="flex justify-center">
-                            <Calendar value={field.value} onChange={(e) => field.onChange(e.value)} className="w-full max-w-[240px]" dateFormat="dd/mm/yy" showIcon />
+                            <Calendar value={field.value} onChange={(e) => field.onChange(e.value)} className="w-full" dateFormat="dd/mm/yy" showIcon />
                           </div>
                         )}
                       />
@@ -847,7 +963,7 @@ export default function EmpleadoForm({ visible, onHide, onSave, onUpdate, emplea
 
 // â”€â”€ Sidebar memoizado: se suscribe a useWatch desde DENTRO,
 //     lo que evita re-renders del padre (y por tanto del form)
-const SidebarPreview = memo(function SidebarPreview({ currentSede, isEdit, sections }) {
+const SidebarPreview = memo(function SidebarPreview({ currentEntidad, isEdit, sections, sedesOptions }) {
   const { control, setValue } = useFormContext()
   const [fotoPreviewOpen, setFotoPreviewOpen] = useState(false)
   const nombres = useWatch({ control, name: 'nombres' }) || ''
@@ -863,10 +979,11 @@ const SidebarPreview = memo(function SidebarPreview({ currentSede, isEdit, secti
   const sedeId = useWatch({ control, name: 'sedeId' })
   const tipoDocumento = useWatch({ control, name: 'tipoDocumento' })
   const lugarNacimiento = useWatch({ control, name: 'lugarNacimiento' })
+  const area = useWatch({ control, name: 'area' })
   const foto = useWatch({ control, name: 'foto' })
 
   const nombreCompleto = `${nombres} ${apellidos}`.trim()
-  const sede = SEDES.find((s) => s.id === sedeId) || currentSede
+  const sede = sedesOptions.find((s) => s.id === sedeId) || currentEntidad
   const edad = fechaNacimiento ? formatEdad(fechaNacimiento) : null
   const duracion = fechaIngreso && fechaFinal ? formatDuracion(fechaIngreso, fechaFinal) : null
 
@@ -874,8 +991,8 @@ const SidebarPreview = memo(function SidebarPreview({ currentSede, isEdit, secti
     identidad: !!(nombres && apellidos && tipoDocumento && identificacion),
     nacimiento: !!(fechaNacimiento && lugarNacimiento),
     residencia: !!(direccion && eps),
-    laboral: !!(sedeId && fechaIngreso && (cargo || profesion)),
-  }), [nombres, apellidos, tipoDocumento, identificacion, fechaNacimiento, lugarNacimiento, direccion, eps, cargo, profesion, sedeId, fechaIngreso])
+    laboral: !!(sedeId && fechaIngreso && (cargo || profesion) && area),
+  }), [nombres, apellidos, tipoDocumento, identificacion, fechaNacimiento, lugarNacimiento, direccion, eps, cargo, profesion, sedeId, fechaIngreso, area])
 
   const completedCount = Object.values(completed).filter(Boolean).length
   const progressPct = (completedCount / sections.length) * 100
@@ -975,6 +1092,7 @@ const SidebarPreview = memo(function SidebarPreview({ currentSede, isEdit, secti
         <SidebarStat icon="pi-hourglass" label="Duración" value={duracion} />
         <SidebarStat icon="pi-id-card" label="Documento" value={identificacion} />
         <SidebarStat icon="pi-heart" label="EPS" value={eps} />
+        <SidebarStat icon="pi-sitemap" label="Área" value={area} />
         <SidebarStat
           icon="pi-calendar-plus"
           label="Ingreso"
@@ -1028,7 +1146,7 @@ const SidebarPreview = memo(function SidebarPreview({ currentSede, isEdit, secti
         </div>
       </div>
 
-      <FotoPreviewModal
+      <PhotoPreviewModal
         visible={fotoPreviewOpen}
         onHide={() => setFotoPreviewOpen(false)}
         src={foto}
@@ -1037,52 +1155,6 @@ const SidebarPreview = memo(function SidebarPreview({ currentSede, isEdit, secti
     </aside>
   )
 })
-
-function FotoPreviewModal({ visible, onHide, src, nombre }) {
-  if (!src) return null
-  return (
-    <Dialog
-      visible={visible}
-      onHide={onHide}
-      modal
-      dismissableMask
-      showHeader={false}
-      style={{ width: 'min(540px, 92vw)' }}
-      contentStyle={{ padding: 0, background: 'transparent' }}
-    >
-      <div className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-          <div>
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Vista previa</p>
-            {nombre && (
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">{nombre}</p>
-            )}
-          </div>
-        </div>
-        <div className="p-4 bg-slate-100 dark:bg-slate-950 flex items-center justify-center">
-          <img
-            src={src}
-            alt={nombre || 'Foto'}
-            className="max-w-full max-h-[70vh] rounded-md shadow-md object-contain"
-          />
-        </div>
-        <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-            <i className="pi pi-info-circle" />
-            Click fuera o ESC para cerrar
-          </p>
-          <Button
-            label="Cerrar"
-            icon="pi pi-times"
-            outlined
-            size="small"
-            onClick={onHide}
-          />
-        </div>
-      </div>
-    </Dialog>
-  )
-}
 
 // â”€â”€ Componentes calculados memoizados para no re-renderizar el form
 const EdadCalculada = memo(function EdadCalculada() {

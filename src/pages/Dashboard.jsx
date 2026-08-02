@@ -21,7 +21,7 @@ import KpiCard from '../components/KpiCard.jsx'
 import { KpiSkeleton } from '../components/Skeleton.jsx'
 import { dashboardService } from '../services/mock.data.js'
 import { useAuth } from '../context/AuthContext.jsx'
-import { useSede } from '../context/SedeContext.jsx'
+import { useEntidad } from '../context/EntidadContext.jsx'
 import { formatDate } from '../utils/format.js'
 
 ChartJS.register(
@@ -65,17 +65,17 @@ const doughnutOptions = {
 
 export default function Dashboard() {
   const { user } = useAuth()
-  const { currentSede } = useSede()
+  const { currentEntidad } = useEntidad()
   const [kpis, setKpis] = useState(null)
   const [actividad, setActividad] = useState([])
   const [charts, setCharts] = useState(null)
 
   useEffect(() => {
-    if (!currentSede) return
-    dashboardService.kpis(currentSede.id).then(setKpis)
+    if (!currentEntidad) return
+    dashboardService.kpis(currentEntidad.id).then(setKpis)
     dashboardService.actividad().then(setActividad)
-    dashboardService.charts(currentSede.id).then(setCharts)
-  }, [currentSede])
+    dashboardService.charts(currentEntidad.id).then(setCharts)
+  }, [currentEntidad])
 
   const empleadosPorArea = charts ? {
     labels: charts.empleadosPorArea.map((c) => c.area),
@@ -129,7 +129,7 @@ export default function Dashboard() {
     <div>
       <PageHeader
         title={`Hola, ${user?.name?.split(' ')[0] || ''} 👋`}
-        subtitle={`Resumen de ${currentSede?.nombre || 'la sede'} · hoy`}
+        subtitle={`Resumen de ${currentEntidad?.nombre || 'la sede'} · hoy`}
         actions={
           <div className="flex gap-2">
             <Button label="Exportar" icon="pi pi-download" outlined size="small" />
@@ -248,8 +248,8 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-3">
             {[
               { to: '/empleados', icon: 'pi-user-plus', label: 'Nuevo empleado', color: 'from-brand-500 to-brand-700' },
-              { to: '/contratos', icon: 'pi-file-edit', label: 'Crear contrato', color: 'from-emerald-500 to-emerald-700' },
-              { to: '/plantillas', icon: 'pi-clone', label: 'Plantillas', color: 'from-amber-500 to-amber-600' },
+              { to: '/admin/contratos', icon: 'pi-file-edit', label: 'Crear contrato', color: 'from-emerald-500 to-emerald-700' },
+              { to: '/admin/plantillas', icon: 'pi-clone', label: 'Plantillas', color: 'from-amber-500 to-amber-600' },
               { to: '/documentos', icon: 'pi-upload', label: 'Subir documento', color: 'from-rose-500 to-rose-600' },
             ].map((a) => (
               <Link

@@ -10,11 +10,9 @@ import { useTheme } from '../context/ThemeContext.jsx'
 const QUICK = [
   { email: 'admin@gth.com', password: 'admin123', label: 'Admin', letter: 'A' },
   { email: 'rrhh@gth.com', password: 'rrhh123', label: 'RRHH', letter: 'R' },
-  { email: 'supervisor@gth.com', password: 'super123', label: 'Supervisor', letter: 'S' },
-  { email: 'empleado@gth.com', password: 'emp123', label: 'Empleado', letter: 'E' },
 ]
 
-const QUICK_COLORS = ['#A8CF45', '#10b981', '#f59e0b', '#8b5cf6']
+const QUICK_COLORS = ['#A8CF45', '#10b981']
 
 export default function Login() {
   const { login } = useAuth()
@@ -36,7 +34,8 @@ export default function Login() {
       const to = location.state?.from?.pathname || '/dashboard'
       navigate(to, { replace: true })
     } catch (err) {
-      setError(err.message)
+      const message = err.response?.data?.error?.message || err.message || 'Error desconocido'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -220,7 +219,6 @@ export default function Login() {
                   <Checkbox
                     onChange={(e) => setRemember(e.checked)}
                     checked={remember}
-                    binary
                     className="text-brand-500"
                   />
                   Recordarme

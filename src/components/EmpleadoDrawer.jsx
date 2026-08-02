@@ -1,32 +1,47 @@
+import { useState } from 'react'
 import { Dialog } from 'primereact/dialog'
 import { Button } from 'primereact/button'
 import { TabView, TabPanel } from 'primereact/tabview'
-import { initials, formatDate, avatarColor } from '../utils/format.js'
-
-function buildEmail(nombre) {
-  if (!nombre) return '—'
-  return `${nombre.toLowerCase().replace(/\s+/g, '.').normalize('NFD').replace(/[\u0300-\u036f]/g, '')}@gth.com`
-}
+import {
+  initials,
+  formatDate,
+  avatarColor,
+  formatTiempoRelativo,
+  orDash,
+  tipoDocLabel,
+} from '../utils/format.js'
+import PhotoPreviewModal from './PhotoPreviewModal.jsx'
 
 function calcAntiguedad(fechaIngreso) {
   if (!fechaIngreso) return '—'
-  const inicio = new Date(fechaIngreso)
+  // Parse 'YYYY-MM-DD' como fecha LOCAL (no UTC) para evitar desfase
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(fechaIngreso))
+  if (!m) return '—'
+  const inicio = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  if (Number.isNaN(inicio.getTime())) return '—'
   const hoy = new Date()
   let meses = (hoy.getFullYear() - inicio.getFullYear()) * 12 + (hoy.getMonth() - inicio.getMonth())
   if (hoy.getDate() < inicio.getDate()) meses -= 1
+  if (meses < 0) return '—'
   const anos = Math.floor(meses / 12)
-  const m = meses % 12
-  if (anos === 0) return `${m} mes${m !== 1 ? 'es' : ''}`
-  return `${anos} año${anos !== 1 ? 's' : ''} ${m} mes${m !== 1 ? 'es' : ''}`
+  const mm = meses % 12
+  if (anos === 0) return `${mm} mes${mm !== 1 ? 'es' : ''}`
+  return `${anos} año${anos !== 1 ? 's' : ''} ${mm} mes${mm !== 1 ? 'es' : ''}`
 }
 
 export default function EmpleadoDrawer({ visible, empleado, onHide }) {
+  const [photoPreview, setPhotoPreview] = useState(false)
   if (!empleado) return null
 
   const active = empleado.estado === 'Activo'
   const color = avatarColor(empleado.nombre)
-  const email = buildEmail(empleado.nombre)
   const antiguedad = calcAntiguedad(empleado.fechaIngreso)
+
+  const contactoCompleto = empleado.contactoNombre
+    ? `${empleado.contactoNombre}${empleado.contactoParentesco ? ` (${empleado.contactoParentesco})` : ''}${empleado.contactoTelefono ? ` · ${empleado.contactoTelefono}` : ''}`
+    : '—'
+
+  const tipoDoc = tipoDocLabel(empleado.tipoDocumento)
 
   return (
     <Dialog
@@ -51,7 +66,7 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
                 Perfil del empleado
               </h1>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Información completa de {empleado.nombre}
+                {empleado.nombre ? `Información completa de ${empleado.nombre}` : 'Detalle del empleado'}
               </p>
             </div>
           </div>
@@ -63,45 +78,70 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
             }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-emerald-500 animate-pulse-slow' : 'bg-slate-400'}`} />
-            {empleado.estado}
+            {orDash(empleado.estado)}
           </span>
         </div>
       }
     >
       <div className="flex flex-col h-full bg-white dark:bg-slate-900">
         <div className="flex flex-1 min-h-0">
-          {/* ══════ SIDEBAR (preview tipo EmpleadoForm) ══════ */}
+          {/* ══════ SIDEBAR ══════ */}
           <aside className="w-72 shrink-0 border-r border-slate-200 dark:border-slate-700 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/60 dark:to-slate-900 overflow-y-auto p-5">
             <div className="flex flex-col items-center text-center">
-              <div
-                className={`w-28 h-28 rounded-2xl ${color.bg} ${color.text} flex items-center justify-center font-bold text-4xl ring-4 ring-white dark:ring-slate-800 mb-3`}
-                style={{ boxShadow: '0 8px 24px -4px rgba(0,0,0,0.18)' }}
+              <button
+                type="button"
+                onClick={() => empleado.foto && setPhotoPreview(true)}
+                disabled={!empleado.foto}
+                className={`relative group block rounded-2xl mb-3 transition ${
+                  empleado.foto ? 'cursor-zoom-in hover:scale-[1.02]' : 'cursor-default'
+                }`}
+                title={empleado.foto ? 'Click para ver en grande' : 'Sin foto'}
               >
-                {initials(empleado.nombre)}
-              </div>
+                {empleado.foto ? (
+                  <img
+                    src={empleado.foto}
+                    alt={empleado.nombre}
+                    className="w-28 h-28 rounded-2xl object-cover ring-4 ring-white dark:ring-slate-800"
+                    style={{ boxShadow: '0 8px 24px -4px rgba(0,0,0,0.18)' }}
+                  />
+                ) : (
+                  <div
+                    className={`w-28 h-28 rounded-2xl ${color.bg} ${color.text} flex items-center justify-center font-bold text-4xl ring-4 ring-white dark:ring-slate-800`}
+                    style={{ boxShadow: '0 8px 24px -4px rgba(0,0,0,0.18)' }}
+                  >
+                    {initials(empleado.nombre)}
+                  </div>
+                )}
+                {empleado.foto && (
+                  <span className="absolute inset-0 rounded-2xl bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                    <span className="opacity-0 group-hover:opacity-100 transition inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-slate-700 text-[11px] font-semibold shadow">
+                      <i className="pi pi-search-plus text-[10px]" />
+                      Ver foto
+                    </span>
+                  </span>
+                )}
+              </button>
               <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                {empleado.nombre}
+                {orDash(empleado.nombre)}
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {empleado.cargo}
+                {orDash(empleado.cargo)}
               </p>
               <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700">
                 <i className="pi pi-building text-[10px]" />
-                {empleado.sede}
+                {orDash(empleado.sede)}
               </span>
             </div>
 
-            {/* Mini stats */}
             <div className="mt-5 space-y-2">
               <SidebarStat icon="pi-id-card"      label="Cédula"      value={empleado.cedula} mono />
               <SidebarStat icon="pi-calendar"     label="Ingreso"     value={formatDate(empleado.fechaIngreso)} />
               <SidebarStat icon="pi-clock"        label="Antigüedad"  value={antiguedad} />
-              <SidebarStat icon="pi-sitemap"      label="Área"        value={empleado.area} />
-              <SidebarStat icon="pi-envelope"     label="Correo"      value={email} mono />
-              <SidebarStat icon="pi-phone"        label="Teléfono"    value="+57 300 123 4567" mono />
+              <SidebarStat icon="pi-sitemap"      label="Área"        value={orDash(empleado.area)} />
+              <SidebarStat icon="pi-envelope"     label="Correo"      value={orDash(empleado.email)} mono />
+              <SidebarStat icon="pi-phone"        label="Teléfono"    value={orDash(empleado.contactoTelefono)} mono />
             </div>
 
-            {/* Sede-color accent stripe */}
             <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                 <i className="pi pi-info-circle text-brand-500" />
@@ -109,12 +149,12 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
               </div>
               <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 mt-2">
                 <i className="pi pi-history text-brand-500" />
-                <span>Última act. <span className="text-slate-700 dark:text-slate-200 font-medium">hace 2 horas</span></span>
+                <span>Última act. <span className="text-slate-700 dark:text-slate-200 font-medium">{formatTiempoRelativo(empleado.updatedAt)}</span></span>
               </div>
             </div>
           </aside>
 
-          {/* ══════ TABS AREA ══════ */}
+          {/* ══════ TABS ══════ */}
           <main className="flex-1 min-w-0 flex flex-col">
             <div className="flex-1 overflow-y-auto px-6 py-5">
               <TabView>
@@ -124,22 +164,28 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
                     <Section index="1" icon="pi-user" title="Datos personales" desc="Identificación y datos de contacto">
                       <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 sm:col-span-6">
-                          <Field label="Nombre completo" value={empleado.nombre} />
+                          <Field label="Nombre completo" value={orDash(empleado.nombre)} />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="Cédula" value={empleado.cedula} mono />
+                          <Field label="Cédula" value={orDash(empleado.cedula)} mono />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="Tipo doc." value="Cédula de ciudadanía" chip="slate" />
+                          <Field label="Tipo doc." value={tipoDoc} chip="slate" />
                         </div>
                         <div className="col-span-12 sm:col-span-6">
-                          <Field label="Correo corporativo" value={email} mono />
+                          <Field label="Correo corporativo" value={orDash(empleado.email)} mono />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="F. expedición" value="12/03/2018" />
+                          <Field label="F. expedición" value={formatDate(empleado.fechaExpedicion)} />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="Teléfono" value="+57 300 123 4567" mono />
+                          <Field label="Lugar de expedición" value={orDash(empleado.lugarExpedicion)} />
+                        </div>
+                        <div className="col-span-12 sm:col-span-6">
+                          <Field label="F. nacimiento" value={formatDate(empleado.fechaNacimiento)} />
+                        </div>
+                        <div className="col-span-12 sm:col-span-6">
+                          <Field label="Lugar de nacimiento" value={orDash(empleado.lugarNacimiento)} />
                         </div>
                       </div>
                     </Section>
@@ -147,39 +193,36 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
                     <Section index="2" icon="pi-heart" title="Salud y seguridad social" desc="EPS, fondo de pensiones y riesgos laborales">
                       <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="EPS" value="Sanitas" />
+                          <Field label="EPS" value={orDash(empleado.eps)} />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="AFP" value="Porvenir" />
+                          <Field label="AFP" value={orDash(empleado.afp)} />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="ARL" value="Sura" />
+                          <Field label="ARL" value={orDash(empleado.arl)} />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="Caja de compensación" value="Compensar" />
+                          <Field label="Caja de compensación" value={orDash(empleado.cajaCompensacion)} />
                         </div>
                         <div className="col-span-12 sm:col-span-3">
-                          <Field label="Tipo de sangre" value="O+" chip="rose" />
+                          <Field label="Tipo de sangre" value={orDash(empleado.tipoSangre)} chip="rose" />
                         </div>
                         <div className="col-span-12 sm:col-span-9">
-                          <Field label="Contacto de emergencia" value="María Pérez · 300 456 7890" />
+                          <Field label="Contacto de emergencia" value={contactoCompleto} />
                         </div>
                       </div>
                     </Section>
 
-                    <Section index="3" icon="pi-map-marker" title="Ubicación" desc="Dirección y modalidad de trabajo">
+                    <Section index="3" icon="pi-map-marker" title="Ubicación" desc="Dirección y sede">
                       <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-12 sm:col-span-8">
-                          <Field label="Dirección de residencia" value="Cra 7 #45-30, Apto 502" />
-                        </div>
-                        <div className="col-span-12 sm:col-span-4">
-                          <Field label="Ciudad / Depto" value={`${empleado.sede}, Cundinamarca`} />
+                        <div className="col-span-12">
+                          <Field label="Dirección de residencia" value={orDash(empleado.direccion)} />
                         </div>
                         <div className="col-span-12 sm:col-span-6">
-                          <Field label="Sede asignada" value={empleado.sede} chip="brand" />
+                          <Field label="Sede asignada" value={orDash(empleado.sede)} chip="brand" />
                         </div>
                         <div className="col-span-12 sm:col-span-6">
-                          <Field label="Modalidad" value="Presencial" chip="emerald" />
+                          <Field label="Estado" value={orDash(empleado.estado)} chip={active ? 'emerald' : 'slate'} />
                         </div>
                       </div>
                     </Section>
@@ -189,91 +232,53 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
                 {/* ────── TAB: LABORAL ────── */}
                 <TabPanel header="Laboral">
                   <div className="space-y-5 pt-1">
-                    <Section index="1" icon="pi-briefcase" title="Posición actual" desc="Cargo, contrato y remuneración">
+                    <Section index="1" icon="pi-briefcase" title="Posición actual" desc="Cargo, área y fechas contractuales">
                       <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 sm:col-span-6">
-                          <Field label="Cargo" value={empleado.cargo} highlight />
+                          <Field label="Cargo" value={orDash(empleado.cargo)} highlight />
                         </div>
                         <div className="col-span-12 sm:col-span-6">
-                          <Field label="Área" value={empleado.area} chip="slate" />
-                        </div>
-                        <div className="col-span-12 sm:col-span-4">
-                          <Field label="Tipo de contrato" value="Término indefinido" chip="emerald" />
-                        </div>
-                        <div className="col-span-12 sm:col-span-4">
-                          <Field label="Jornada" value="Tiempo completo · 48h" />
-                        </div>
-                        <div className="col-span-12 sm:col-span-4">
-                          <Field label="Periodicidad" value="Mensual" />
+                          <Field label="Área" value={orDash(empleado.area)} chip="slate" />
                         </div>
                         <div className="col-span-12 sm:col-span-6">
-                          <Field label="Salario base" value="$ 3.200.000" mono highlight />
+                          <Field label="Profesión" value={orDash(empleado.profesion)} />
                         </div>
-                        <div className="col-span-12 sm:col-span-3">
-                          <Field label="Aux. transporte" value="Sí" chip="brand" />
+                        <div className="col-span-12 sm:col-span-6">
+                          <Field label="Nivel académico" value={orDash(empleado.nivelAcademico)} />
                         </div>
-                        <div className="col-span-12 sm:col-span-3">
-                          <Field label="Nivel de riesgo" value="Riesgo I" chip="amber" />
+                        <div className="col-span-12 sm:col-span-6">
+                          <Field label="F. ingreso" value={formatDate(empleado.fechaIngreso)} />
+                        </div>
+                        <div className="col-span-12 sm:col-span-6">
+                          <Field label="F. final" value={empleado.fechaFinal ? formatDate(empleado.fechaFinal) : 'Indefinido'} chip={empleado.fechaFinal ? 'amber' : 'emerald'} />
                         </div>
                       </div>
                     </Section>
 
-                    <Section index="2" icon="pi-history" title="Línea de tiempo laboral" desc="Movimientos y cambios contractuales">
+                    <Section index="2" icon="pi-history" title="Línea de tiempo laboral" desc="Eventos de la relación laboral">
                       <div className="relative pl-6">
                         <div className="absolute left-2 top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-700" />
                         <div className="space-y-3">
-                          <TimelineEvent
-                            icon="pi-play" color="emerald"
-                            title="Inicio en la empresa"
-                            when={formatDate(empleado.fechaIngreso)}
-                            desc={`Cargo inicial: ${empleado.cargo}`}
-                          />
-                          <TimelineEvent
-                            icon="pi-arrow-up-right" color="brand"
-                            title="Promoción a cargo actual"
-                            when="01/08/2023"
-                            desc={`Ascendió a ${empleado.cargo} en el área de ${empleado.area}`}
-                          />
-                          <TimelineEvent
-                            icon="pi-sync" color="violet"
-                            title="Cambio de sede"
-                            when="10/02/2024"
-                            desc={`Trasladado a la sede ${empleado.sede}`}
-                          />
-                          <TimelineEvent
-                            icon="pi-dollar" color="amber"
-                            title="Ajuste salarial"
-                            when="15/01/2024"
-                            desc="Incremento del 8% — Adenda No. 002"
-                          />
+                          {empleado.fechaIngreso && (
+                            <TimelineEvent
+                              icon="pi-play" color="emerald"
+                              title="Inicio de relación laboral"
+                              when={formatDate(empleado.fechaIngreso)}
+                              desc={`Ingresó como ${orDash(empleado.cargo)} en ${orDash(empleado.area)}.`}
+                            />
+                          )}
+                          {empleado.fechaFinal && (
+                            <TimelineEvent
+                              icon="pi-stop" color="rose"
+                              title="Fin de contrato programado"
+                              when={formatDate(empleado.fechaFinal)}
+                              desc={`Terminación prevista del contrato.`}
+                            />
+                          )}
+                          {!empleado.fechaIngreso && !empleado.fechaFinal && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 italic">Sin eventos registrados.</p>
+                          )}
                         </div>
-                      </div>
-                    </Section>
-
-                    <Section index="3" icon="pi-clock" title="Jornada semanal" desc="Horario asignado y días libres">
-                      <div className="grid grid-cols-7 gap-2">
-                        {['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'].map((d, i) => {
-                          const isOff = i >= 5
-                          return (
-                            <div
-                              key={d}
-                              className={`rounded-xl p-3 text-center transition ${
-                                isOff
-                                  ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-700'
-                                  : 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800'
-                              }`}
-                            >
-                              <div className="text-[11px] font-bold uppercase tracking-wider">{d}</div>
-                              <div className="mt-2 text-xs font-semibold">{isOff ? 'Libre' : '07–17'}</div>
-                              <div className="text-[10px] mt-0.5 opacity-70">{isOff ? '' : '8h'}</div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                      <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                        <span><span className="font-semibold text-slate-700 dark:text-slate-200">40h</span> semanales</span>
-                        <span>·</span>
-                        <span>Descanso <span className="font-semibold text-slate-700 dark:text-slate-200">sáb-dom</span></span>
                       </div>
                     </Section>
                   </div>
@@ -282,37 +287,13 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
                 {/* ────── TAB: EXPEDIENTE ────── */}
                 <TabPanel header="Expediente">
                   <div className="space-y-5 pt-1">
-                    <Section index="1" icon="pi-folder" title="Documentos del expediente" desc="Archivos cargados y organizados por tipo">
-                      <div className="grid grid-cols-3 gap-3">
-                        <DocCard icon="pi-id-card"   name="Cédula (frontal)"   size="1.2 MB" date="12/08/2024" verified />
-                        <DocCard icon="pi-id-card"   name="Cédula (posterior)" size="0.9 MB" date="12/08/2024" verified />
-                        <DocCard icon="pi-file-pdf"  name="Contrato laboral"   size="245 KB"  date={formatDate(empleado.fechaIngreso)} verified />
-                        <DocCard icon="pi-file-pdf"  name="Adenda salarial"    size="118 KB"  date="15/01/2024" verified />
-                        <DocCard icon="pi-file-word" name="Hoja de vida"       size="68 KB"   date="30/07/2024" />
-                        <DocCard icon="pi-image"     name="Foto de perfil"     size="2.4 MB"  date="01/08/2024" />
-                        <DocCard icon="pi-shield"    name="Certificado EPS"    size="94 KB"   date="01/09/2024" />
-                        <DocCard icon="pi-bookmark"  name="Acta de grado"      size="310 KB"  date="18/06/2022" />
-                        <DocCard icon="pi-plus-circle" name="Subir archivo" dashed />
-                      </div>
-                    </Section>
-
-                    <Section index="2" icon="pi-history" title="Versiones recientes" desc="Historial de cambios en cada documento">
-                      <div className="space-y-1.5">
-                        {[
-                          { f: 'Contrato laboral', v: 'v3', u: 'admin@gth.com', d: '15/01/2024' },
-                          { f: 'Hoja de vida', v: 'v2', u: empleado.nombre, d: '30/07/2024' },
-                          { f: 'Foto de perfil', v: 'v1', u: empleado.nombre, d: '01/08/2024' },
-                          { f: 'Cédula (frontal)', v: 'v2', u: 'rrhh@gth.com', d: '12/08/2024' },
-                        ].map((x, i) => (
-                          <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-                            <span className="text-[10px] font-mono font-bold text-brand-700 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/40 px-2 py-0.5 rounded">
-                              {x.v}
-                            </span>
-                            <span className="text-sm text-slate-700 dark:text-slate-200 font-medium flex-1">{x.f}</span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">{x.u}</span>
-                            <span className="text-xs text-slate-400 dark:text-slate-500 w-24 text-right">{x.d}</span>
-                          </div>
-                        ))}
+                    <Section index="1" icon="pi-folder" title="Documentos del expediente" desc="Archivos cargados en el sistema">
+                      <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 bg-slate-50/40 dark:bg-slate-800/20 p-8 text-center">
+                        <i className="pi pi-folder-open text-3xl text-slate-400 mb-3 block" />
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Sin documentos cargados</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          El módulo de expediente digital aún no está conectado a la base de datos.
+                        </p>
                       </div>
                     </Section>
                   </div>
@@ -321,41 +302,37 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
                 {/* ────── TAB: ACTIVIDAD ────── */}
                 <TabPanel header="Actividad">
                   <div className="pt-1">
-                    <Section index="1" icon="pi-clock" title="Registro de actividad" desc="Eventos recientes del empleado en el sistema">
+                    <Section index="1" icon="pi-clock" title="Registro de actividad" desc="Eventos recientes del empleado">
                       <div className="relative pl-7">
                         <div className="absolute left-3 top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-700" />
                         <div className="space-y-4">
-                          <TimelineEvent
-                            icon="pi-pencil" color="brand"
-                            title="Actualizó información de perfil"
-                            when="Hace 2 horas"
-                            desc="Modificó teléfono y dirección de residencia"
-                          />
-                          <TimelineEvent
-                            icon="pi-verified" color="emerald"
-                            title="Firmó certificación laboral"
-                            when="Hace 3 días"
-                            desc="Certificado No. 0247 con firma digital SHA-256"
-                            signed
-                          />
-                          <TimelineEvent
-                            icon="pi-upload" color="violet"
-                            title="Subió documento de identidad"
-                            when="Hace 1 mes"
-                            desc="cédula_frontal_v2.pdf · 1.2 MB"
-                          />
-                          <TimelineEvent
-                            icon="pi-sync" color="amber"
-                            title="Cambio de sede"
-                            when="Hace 5 meses"
-                            desc={`Trasladado desde Medellín a ${empleado.sede}`}
-                          />
-                          <TimelineEvent
-                            icon="pi-briefcase" color="brand"
-                            title="Inicio de relación laboral"
-                            when={formatDate(empleado.fechaIngreso)}
-                            desc={`Contrato a término indefinido como ${empleado.cargo}`}
-                          />
+                          {empleado.updatedAt && (
+                            <TimelineEvent
+                              icon="pi-pencil" color="brand"
+                              title="Última actualización del perfil"
+                              when={formatTiempoRelativo(empleado.updatedAt)}
+                              desc={`${formatDate(empleado.updatedAt)} · datos personales o laborales modificados.`}
+                            />
+                          )}
+                          {empleado.createdAt && (
+                            <TimelineEvent
+                              icon="pi-user-plus" color="emerald"
+                              title="Empleado dado de alta en el sistema"
+                              when={formatDate(empleado.createdAt)}
+                              desc={`Registro inicial en la plataforma.`}
+                            />
+                          )}
+                          {empleado.fechaIngreso && (
+                            <TimelineEvent
+                              icon="pi-briefcase" color="brand"
+                              title="Inicio de relación laboral"
+                              when={formatDate(empleado.fechaIngreso)}
+                              desc={`Contrato como ${orDash(empleado.cargo)} en ${orDash(empleado.area)}.`}
+                            />
+                          )}
+                          {!empleado.createdAt && !empleado.updatedAt && !empleado.fechaIngreso && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 italic">Sin actividad registrada.</p>
+                          )}
                         </div>
                       </div>
                     </Section>
@@ -364,31 +341,29 @@ export default function EmpleadoDrawer({ visible, empleado, onHide }) {
               </TabView>
             </div>
 
-            {/* ══════ STICKY FOOTER (mismo patrón que EmpleadoForm) ══════ */}
             <footer className="border-t border-slate-200 dark:border-slate-700 px-6 py-3 bg-slate-50/60 dark:bg-slate-900/60 flex items-center justify-between shrink-0">
               <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
                 <i className="pi pi-info-circle text-brand-500" />
                 Vista de solo lectura · Los cambios se realizan desde el botón Editar
               </p>
               <div className="flex gap-2">
-                <Button label="Imprimir" icon="pi pi-print" outlined size="small" />
                 <Button label="Cerrar" outlined size="small" onClick={onHide} />
-                <Button
-                  label="Editar perfil"
-                  icon="pi pi-pencil"
-                  severity="info"
-                  size="small"
-                />
               </div>
             </footer>
           </main>
         </div>
       </div>
+
+      <PhotoPreviewModal
+        visible={photoPreview}
+        onHide={() => setPhotoPreview(false)}
+        src={empleado.foto}
+        nombre={empleado.nombre}
+        size="lg"
+      />
     </Dialog>
   )
 }
-
-/* ════════════════════ SUB-COMPONENTES ════════════════════ */
 
 function SidebarStat({ icon, label, value, mono }) {
   return (
@@ -483,35 +458,6 @@ function TimelineEvent({ icon, color, title, when, desc, signed }) {
           <span className="ml-auto text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">{when}</span>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{desc}</p>
-      </div>
-    </div>
-  )
-}
-
-function DocCard({ icon, name, size, date, verified, dashed }) {
-  if (dashed) {
-    return (
-      <button
-        type="button"
-        className="rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-brand-400 hover:bg-brand-50/40 dark:hover:bg-brand-900/10 p-4 flex flex-col items-center justify-center gap-2 transition group min-h-[120px]"
-      >
-        <i className="pi pi-plus-circle text-2xl text-slate-400 group-hover:text-brand-500 transition" />
-        <span className="text-xs font-semibold text-slate-500 group-hover:text-brand-600">Subir archivo</span>
-      </button>
-    )
-  }
-  return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/40 p-3.5 hover:border-brand-300 hover:shadow-sm transition group cursor-pointer">
-      <div className="flex items-start justify-between mb-2">
-        <div className="w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center group-hover:bg-brand-100 transition">
-          <i className={`pi ${icon} text-base`} />
-        </div>
-        {verified && <i className="pi pi-verified text-emerald-500 text-base" title="Verificado" />}
-      </div>
-      <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate" title={name}>{name}</p>
-      <div className="flex items-center justify-between mt-1 text-[10px] text-slate-400 dark:text-slate-500">
-        <span className="font-mono">{size}</span>
-        <span>{date}</span>
       </div>
     </div>
   )

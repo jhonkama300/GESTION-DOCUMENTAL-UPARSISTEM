@@ -4,21 +4,21 @@ import { Avatar } from 'primereact/avatar'
 import { Menu } from 'primereact/menu'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { useSede } from '../context/SedeContext.jsx'
+import { useEntidad } from '../context/EntidadContext.jsx'
 import { initials } from '../utils/format.js'
 import CommandPalette from './CommandPalette.jsx'
 import NotificationsPanel from './NotificationsPanel.jsx'
-import SedeSwitcher from './SedeSwitcher.jsx'
+import EntidadSwitcher from './EntidadSwitcher.jsx'
 
 export default function Topbar({ onToggleSidebar }) {
   const { user, logout } = useAuth()
   const { theme, toggle } = useTheme()
-  const { currentSede, clearSede } = useSede()
+  const { currentEntidad, clearEntidad } = useEntidad()
   const navigate = useNavigate()
   const menuRef = useRef(null)
   const paletteRef = useRef(null)
   const notifRef = useRef(null)
-  const sedeRef = useRef(null)
+  const entidadRef = useRef(null)
 
   const items = [
     {
@@ -41,7 +41,7 @@ export default function Topbar({ onToggleSidebar }) {
       label: 'Cerrar sesión',
       icon: 'pi pi-sign-out',
       command: () => {
-        clearSede()
+        clearEntidad()
         logout()
         navigate('/login', { replace: true })
       },
@@ -59,26 +59,26 @@ export default function Topbar({ onToggleSidebar }) {
           <i className="pi pi-bars" />
         </button>
 
-        {currentSede && (
+        {currentEntidad && (
           <button
-            ref={sedeRef}
-            onClick={(e) => sedeRef.current?.toggle(e)}
+            ref={entidadRef}
+            onClick={(e) => entidadRef.current?.toggle(e)}
             className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-brand-400 hover:bg-brand-50/50 dark:hover:bg-brand-900/20 transition-all"
           >
             <div
               className="w-7 h-7 rounded-md flex items-center justify-center text-white text-xs font-bold shadow-sm"
-              style={{ background: currentSede.color }}
+              style={{ background: currentEntidad.color }}
             >
-              {currentSede.iniciales}
+              {currentEntidad.iniciales}
             </div>
             <div className="leading-tight text-left hidden sm:block">
-              <p className="text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Sede</p>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{currentSede.nombre}</p>
+              <p className="text-[9px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Entidad</p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{currentEntidad.nombre}</p>
             </div>
             <i className="pi pi-chevron-down text-[10px] text-slate-400" />
           </button>
         )}
-        <SedeSwitcher ref={sedeRef} />
+        <EntidadSwitcher ref={entidadRef} />
 
         <div className="hidden md:block ml-2">
           <p className="text-xs text-slate-500 dark:text-slate-400">Bienvenido,</p>
